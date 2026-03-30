@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dossier E5 - MédiaCom Horizon | Younes B.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark_bg: '#0f172a',
+                        card_bg: '#1e293b',
+                        cisco_blue: '#00bceb',
+                        cisco_green: '#22c55e',
+                        cisco_red: '#ef4444',
+                        text_main: '#e2e8f0'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'flow': 'flow 2s linear infinite',
+                    },
+                    keyframes: {
+                        flow: {
+                            '0%': { strokeDashoffset: '20' },
+                            '100%': { strokeDashoffset: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; }
+        
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        /* Styles spécifiques Documentation */
+        .doc-h2 { @apply text-3xl font-bold text-white mb-8 flex items-center gap-3 border-b border-slate-700 pb-4; }
+        .doc-h3 { @apply text-xl font-bold text-cisco_blue mb-4 mt-6; }
+        .doc-p { @apply text-slate-400 text-sm leading-relaxed mb-4 text-justify; }
+        
+        /* CLI Window */
+        .cli-window {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #1e1e1e;
+            color: #cccccc;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        .cli-header {
+            background: #2d2d2d;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .cli-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .cli-content { padding: 15px; font-size: 0.8rem; line-height: 1.5; }
+        .cli-prompt { color: #00bceb; }
+        .cli-cmd { color: #fff; font-weight: bold; }
+        .cli-comment { color: #6a9955; font-style: italic; }
+
+        /* Packet Animation */
+        .packet {
+            width: 10px; height: 10px; background: #22c55e; border-radius: 50%;
+            position: absolute; z-index: 50; display: none;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-72 bg-card_bg border-r border-slate-700 flex-col hidden xl:flex z-50">
+        <div class="p-6 border-b border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-cisco_blue rounded flex items-center justify-center text-white font-bold text-xl">
+                    <i class="fa-solid fa-network-wired"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white leading-none">MédiaCom</h1>
+                    <span class="text-xs text-cisco_blue font-mono">PROJET E5</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1 text-xs font-medium text-slate-400">
+            <p class="px-3 mb-2 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Projet</p>
+            <a href="#intro" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-house w-6"></i> 1. Accueil</a>
+            <a href="#context" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-building w-6"></i> 2. Contexte & Enjeux</a>
+            <a href="#specs" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-list-check w-6"></i> 3. Cahier des Charges</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Technique</p>
+            <a href="#topology" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-sitemap w-6"></i> 4. Topologie & Flux</a>
+            <a href="#vlan" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-layer-group w-6"></i> 5. Config N2 (VLAN)</a>
+            <a href="#trunk" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-road w-6"></i> 6. Config N2 (Trunk)</a>
+            <a href="#routing" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-route w-6"></i> 7. Config N3 (ROAS)</a>
+            <a href="#services" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-server w-6"></i> 8. Services DHCP</a>
+            <a href="#security" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-shield-halved w-6"></i> 9. Sécurité (ACL)</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Finalisation</p>
+            <a href="#validation" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-terminal w-6"></i> 10. Validation</a>
+            <a href="#conclusion" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-flag-checkered w-6"></i> 11. Bilan</a>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-700 bg-black/20">
+            <div class="text-xs text-slate-500">Candidat:</div>
+            <div class="text-sm font-bold text-white">Younes Bouizergane</div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto scroll-smooth p-8">
+        
+        <!-- 1. INTRO -->
+        <section id="intro" class="min-h-[90vh] flex flex-col justify-center items-center text-center border-b border-slate-800">
+            <div class="inline-block p-6 rounded-full bg-cisco_blue/10 border border-cisco_blue/30 mb-8 animate-bounce">
+                <i class="fa-solid fa-network-wired text-6xl text-cisco_blue"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
+                OPTIMISATION <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cisco_blue to-cisco_green">RÉSEAU LOCAL</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                Projet MédiaCom Horizon : Segmentation VLAN, Routage Inter-VLAN et Sécurisation des flux par ACL.
+            </p>
+            <div class="flex gap-4">
+                <span class="px-4 py-2 bg-slate-800 rounded text-xs font-mono text-cisco_blue border border-cisco_blue/30">802.1Q</span>
+                <span class="px-4 py-2 bg-slate-800 rounded text-xs font-mono text-cisco_green border border-cisco_green/30">ROAS</span>
+                <span class="px-4 py-2 bg-slate-800 rounded text-xs font-mono text-cisco_red border border-cisco_red/30">ACLs</span>
+            </div>
+        </section>
+
+        <!-- 2. CONTEXTE & PROBLEMATIQUE -->
+        <section id="context" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">02.</span> Contexte & Problématique</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="bg-card_bg p-8 rounded-xl border border-slate-700 reveal">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-building text-cisco_blue"></i> L'Entreprise</h3>
+                    <p class="doc-p">
+                        <strong>MédiaCom Horizon</strong> est une agence de communication digitale en pleine expansion située à Bordeaux. Elle compte 45 collaborateurs répartis en 3 pôles distincts : Administratif, Créatif et un espace de Coworking pour les clients.
+                    </p>
+                    <p class="doc-p">
+                        L'infrastructure actuelle repose sur un réseau "à plat" (Flat Network) hérité de la création de l'entreprise.
+                    </p>
+                </div>
+
+                <div class="bg-card_bg p-8 rounded-xl border border-cisco_red/30 reveal delay-100">
+                    <h3 class="text-xl font-bold text-cisco_red mb-4 flex items-center gap-2"><i class="fa-solid fa-fire"></i> La Problématique</h3>
+                    <p class="text-white text-lg font-serif italic mb-6">
+                        "Comment garantir la sécurité des données financières tout en offrant une connectivité fluide aux créatifs et aux invités, dans un réseau actuellement saturé et non segmenté ?"
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li><i class="fa-solid fa-xmark text-cisco_red mr-2"></i> Broadcast Storms fréquents.</li>
+                        <li><i class="fa-solid fa-xmark text-cisco_red mr-2"></i> Sécurité nulle (Invités accèdent à la Compta).</li>
+                        <li><i class="fa-solid fa-xmark text-cisco_red mr-2"></i> Pénurie d'adresses IP.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. CAHIER DES CHARGES -->
+        <section id="specs" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">03.</span> Cahier des Charges</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
+                <div class="bg-card_bg p-6 rounded border-t-4 border-cisco_blue">
+                    <div class="text-3xl text-cisco_blue mb-4"><i class="fa-solid fa-layer-group"></i></div>
+                    <h3 class="text-white font-bold mb-2">Segmentation</h3>
+                    <p class="text-xs text-slate-400">Isolation logique des services par VLANs (Admin, Créa, Guest) pour réduire les domaines de diffusion.</p>
+                </div>
+                <div class="bg-card_bg p-6 rounded border-t-4 border-cisco_green">
+                    <div class="text-3xl text-cisco_green mb-4"><i class="fa-solid fa-route"></i></div>
+                    <h3 class="text-white font-bold mb-2">Routage</h3>
+                    <p class="text-xs text-slate-400">Mise en place du routage inter-VLAN via la méthode "Router-on-a-Stick" (Lien Trunk unique).</p>
+                </div>
+                <div class="bg-card_bg p-6 rounded border-t-4 border-cisco_red">
+                    <div class="text-3xl text-cisco_red mb-4"><i class="fa-solid fa-lock"></i></div>
+                    <h3 class="text-white font-bold mb-2">Sécurité</h3>
+                    <p class="text-xs text-slate-400">Filtrage strict via ACLs pour empêcher le réseau Invité d'accéder aux ressources internes.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 reveal delay-100">
+                <h3 class="doc-h3">Plan d'Adressage IP (VLSM)</h3>
+                <table class="w-full text-sm text-left text-slate-400">
+                    <thead class="text-xs uppercase bg-slate-800 text-white">
+                        <tr>
+                            <th class="px-6 py-3">VLAN ID</th>
+                            <th class="px-6 py-3">Nom</th>
+                            <th class="px-6 py-3">Sous-réseau</th>
+                            <th class="px-6 py-3">Passerelle</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700 bg-card_bg">
+                        <tr>
+                            <td class="px-6 py-4 font-mono text-cisco_blue">10</td>
+                            <td class="px-6 py-4 font-bold text-white">ADMIN</td>
+                            <td class="px-6 py-4 font-mono">192.168.10.0/24</td>
+                            <td class="px-6 py-4 font-mono">.254</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-mono text-purple-400">20</td>
+                            <td class="px-6 py-4 font-bold text-white">CREATIF</td>
+                            <td class="px-6 py-4 font-mono">192.168.20.0/24</td>
+                            <td class="px-6 py-4 font-mono">.254</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-mono text-cisco_red">99</td>
+                            <td class="px-6 py-4 font-bold text-white">GUEST</td>
+                            <td class="px-6 py-4 font-mono">192.168.99.0/24</td>
+                            <td class="px-6 py-4 font-mono">.254</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 4. TOPOLOGIE ANIMEE -->
+        <section id="topology" class="py-24 border-b border-slate-800">
+            <div class="flex justify-between items-end mb-8 reveal">
+                <h2 class="doc-h2 mb-0 border-none"><span class="text-slate-600">04.</span> Topologie & Flux (ROAS)</h2>
+                <button onclick="playPacketAnim()" class="px-4 py-2 bg-cisco_blue hover:bg-blue-600 rounded text-white text-sm font-bold transition shadow-lg">
+                    <i class="fa-solid fa-play mr-2"></i> Simuler Flux Inter-VLAN
+                </button>
+            </div>
+
+            <!-- ANIMATION CONTAINER -->
+            <div class="relative w-full h-[500px] bg-slate-800/50 rounded-xl border border-slate-700 shadow-2xl overflow-hidden reveal delay-100" id="schema-container">
+                
+                <!-- Router -->
+                <div class="absolute top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
+                    <div class="w-20 h-20 bg-card_bg rounded-full border-2 border-cisco_blue flex items-center justify-center shadow-[0_0_30px_rgba(0,188,235,0.3)]">
+                        <i class="fa-solid fa-server text-3xl text-white"></i>
+                    </div>
+                    <span class="text-xs font-bold text-white mt-2">R-MEDIACOM</span>
+                    <span class="text-[10px] text-cisco_green font-mono bg-black/50 px-1">Gi0/0/1 (Trunk)</span>
+                </div>
+
+                <!-- Switch -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20">
+                    <div class="w-48 h-16 bg-card_bg rounded border-2 border-slate-500 flex items-center justify-center shadow-xl">
+                        <i class="fa-solid fa-network-wired text-3xl text-slate-300"></i>
+                    </div>
+                    <span class="text-xs font-bold text-white mt-2">SW-MEDIACOM</span>
+                </div>
+
+                <!-- Link Router-Switch (Trunk) -->
+                <div class="absolute top-[90px] left-1/2 -translate-x-1/2 w-1 h-[120px] bg-slate-600"></div>
+
+                <!-- PC Admin (VLAN 10) -->
+                <div class="absolute bottom-10 left-20 flex flex-col items-center z-20">
+                    <div class="w-16 h-16 bg-card_bg rounded-lg border-2 border-cisco_blue flex items-center justify-center">
+                        <i class="fa-solid fa-desktop text-2xl text-white"></i>
+                    </div>
+                    <span class="text-xs font-bold text-white mt-2">PC-ADMIN</span>
+                    <span class="text-[10px] text-cisco_blue font-mono">10.10</span>
+                </div>
+                <!-- Link Switch-PC Admin -->
+                <div class="absolute top-1/2 left-[calc(50%-24px)] w-1 h-[150px] bg-slate-600 origin-top transform rotate-[55deg]"></div>
+
+                <!-- PC Creative (VLAN 20) -->
+                <div class="absolute bottom-10 right-20 flex flex-col items-center z-20">
+                    <div class="w-16 h-16 bg-card_bg rounded-lg border-2 border-purple-500 flex items-center justify-center">
+                        <i class="fa-solid fa-laptop-code text-2xl text-white"></i>
+                    </div>
+                    <span class="text-xs font-bold text-white mt-2">PC-CREATIF</span>
+                    <span class="text-[10px] text-purple-500 font-mono">20.10</span>
+                </div>
+                <!-- Link Switch-PC Crea -->
+                <div class="absolute top-1/2 right-[calc(50%-24px)] w-1 h-[150px] bg-slate-600 origin-top transform -rotate-[55deg]"></div>
+
+                <!-- Packet -->
+                <div id="packet" class="packet transition-all duration-100 ease-linear"></div>
+                
+                <!-- Legend Status -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+                    <span id="anim-status" class="text-xs font-mono text-cisco_blue bg-black/50 px-3 py-1 rounded border border-slate-700">En attente...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CONFIG N2 (VLAN) -->
+        <section id="vlan" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">05.</span> Configuration N2 : VLANs</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 reveal">
+                <div>
+                    <p class="doc-p">
+                        La première étape consiste à déclarer les VLANs dans la base de données du commutateur et à assigner les ports d'accès.
+                    </p>
+                    <ul class="list-disc list-inside text-slate-400 text-sm space-y-2 mt-4">
+                        <li><strong>VLAN 10 :</strong> Ports 2 à 10 (Admin)</li>
+                        <li><strong>VLAN 20 :</strong> Ports 11 à 20 (Créatif)</li>
+                        <li><strong>VLAN 99 :</strong> Ports 21 à 24 (Invités/Wi-Fi)</li>
+                    </ul>
+                </div>
+                <div class="cli-window">
+                    <div class="cli-header">
+                        <div class="flex gap-1"><div class="cli-dot bg-red-500"></div><div class="cli-dot bg-yellow-500"></div><div class="cli-dot bg-green-500"></div></div>
+                        <span>SW-MEDIACOM - SSH</span>
+                    </div>
+                    <div class="cli-content font-mono text-xs">
+                        <span class="cli-prompt">Switch(config)#</span> <span class="cli-cmd">vlan 10</span><br>
+                        <span class="cli-prompt">Switch(config-vlan)#</span> <span class="cli-cmd">name ADMIN</span><br>
+                        <span class="cli-prompt">Switch(config-vlan)#</span> <span class="cli-cmd">exit</span><br>
+                        <span class="cli-prompt">Switch(config)#</span> <span class="cli-cmd">vlan 20</span><br>
+                        <span class="cli-prompt">Switch(config-vlan)#</span> <span class="cli-cmd">name CREATIF</span><br>
+                        <span class="cli-prompt">Switch(config-vlan)#</span> <span class="cli-cmd">exit</span><br>
+                        <span class="cli-comment">! Configuration des ports d'accès</span><br>
+                        <span class="cli-prompt">Switch(config)#</span> <span class="cli-cmd">interface range fa0/2 - 10</span><br>
+                        <span class="cli-prompt">Switch(config-if-range)#</span> <span class="cli-cmd">switchport mode access</span><br>
+                        <span class="cli-prompt">Switch(config-if-range)#</span> <span class="cli-cmd">switchport access vlan 10</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. CONFIG N2 (TRUNK) -->
+        <section id="trunk" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">06.</span> Configuration N2 : Trunk 802.1Q</h2>
+            <div class="reveal">
+                <p class="doc-p">
+                    Le port Gi0/1 relié au routeur doit transporter les trames de tous les VLANs. Le protocole 802.1Q ajoute un "Tag" (étiquette) à la trame Ethernet pour identifier son VLAN d'origine.
+                </p>
+                <div class="cli-window mt-6 max-w-3xl mx-auto">
+                    <div class="cli-header">
+                        <div class="flex gap-1"><div class="cli-dot bg-red-500"></div><div class="cli-dot bg-yellow-500"></div><div class="cli-dot bg-green-500"></div></div>
+                        <span>SW-MEDIACOM - SSH</span>
+                    </div>
+                    <div class="cli-content font-mono text-xs">
+                        <span class="cli-prompt">Switch(config)#</span> <span class="cli-cmd">interface gigabitEthernet 0/1</span><br>
+                        <span class="cli-prompt">Switch(config-if)#</span> <span class="cli-cmd">description UPLINK_ROUTER</span><br>
+                        <span class="cli-comment">! Force le mode Trunk (pas de négo DTP)</span><br>
+                        <span class="cli-prompt">Switch(config-if)#</span> <span class="cli-cmd">switchport mode trunk</span><br>
+                        <span class="cli-prompt">Switch(config-if)#</span> <span class="cli-cmd">switchport nonegotiate</span><br>
+                        <span class="cli-comment">! Sécurité : Autoriser uniquement les VLANs actifs</span><br>
+                        <span class="cli-prompt">Switch(config-if)#</span> <span class="cli-cmd">switchport trunk allowed vlan 10,20,30,99</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. CONFIG N3 (ROUTAGE) -->
+        <section id="routing" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">07.</span> Configuration N3 : Router-on-a-Stick</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 reveal">
+                <div class="cli-window">
+                    <div class="cli-header">
+                        <div class="flex gap-1"><div class="cli-dot bg-red-500"></div><div class="cli-dot bg-yellow-500"></div><div class="cli-dot bg-green-500"></div></div>
+                        <span>R-MEDIACOM - SSH</span>
+                    </div>
+                    <div class="cli-content font-mono text-xs">
+                        <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">interface gi0/0/1</span><br>
+                        <span class="cli-prompt">Router(config-if)#</span> <span class="cli-cmd">no shutdown</span><br>
+                        <span class="cli-prompt">Router(config-if)#</span> <span class="cli-cmd">exit</span><br>
+                        <br>
+                        <span class="cli-comment">! Sous-interface ADMIN (VLAN 10)</span><br>
+                        <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">interface gi0/0/1.10</span><br>
+                        <span class="cli-prompt">Router(config-subif)#</span> <span class="cli-cmd">encapsulation dot1q 10</span><br>
+                        <span class="cli-prompt">Router(config-subif)#</span> <span class="cli-cmd">ip address 192.168.10.254 255.255.255.0</span><br>
+                        <br>
+                        <span class="cli-comment">! Sous-interface CREATIF (VLAN 20)</span><br>
+                        <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">interface gi0/0/1.20</span><br>
+                        <span class="cli-prompt">Router(config-subif)#</span> <span class="cli-cmd">encapsulation dot1q 20</span><br>
+                        <span class="cli-prompt">Router(config-subif)#</span> <span class="cli-cmd">ip address 192.168.20.254 255.255.255.0</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="doc-h3">Principe</h3>
+                    <p class="doc-p">
+                        Le routeur utilise une seule interface physique (Gi0/0/1) découpée en plusieurs **sous-interfaces logiques**.
+                    </p>
+                    <p class="doc-p">
+                        Chaque sous-interface :
+                    </p>
+                    <ul class="list-disc list-inside text-slate-400 text-sm space-y-2">
+                        <li>Est associée à un ID de VLAN (commande <code>encapsulation dot1q</code>).</li>
+                        <li>Possède une adresse IP qui servira de <strong>Passerelle par défaut</strong> pour les clients de ce VLAN.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. SERVICES DHCP -->
+        <section id="services" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">08.</span> Services Réseau : DHCP</h2>
+            <p class="doc-p mb-6 reveal">
+                Le routeur agit comme serveur DHCP centralisé. Il distribue automatiquement les adresses IP aux clients en fonction du VLAN d'origine de la requête.
+            </p>
+            <div class="cli-window max-w-3xl mx-auto reveal delay-100">
+                <div class="cli-content font-mono text-xs">
+                    <span class="cli-comment">! Pool pour les Créatifs</span><br>
+                    <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">ip dhcp pool POOL_CREATIF</span><br>
+                    <span class="cli-prompt">Router(dhcp-config)#</span> <span class="cli-cmd">network 192.168.20.0 255.255.255.0</span><br>
+                    <span class="cli-prompt">Router(dhcp-config)#</span> <span class="cli-cmd">default-router 192.168.20.254</span><br>
+                    <span class="cli-prompt">Router(dhcp-config)#</span> <span class="cli-cmd">dns-server 8.8.8.8</span><br>
+                    <br>
+                    <span class="cli-comment">! Pool pour les Invités</span><br>
+                    <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">ip dhcp pool POOL_GUEST</span><br>
+                    <span class="cli-prompt">Router(dhcp-config)#</span> <span class="cli-cmd">network 192.168.99.0 255.255.255.0</span><br>
+                    <span class="cli-prompt">Router(dhcp-config)#</span> <span class="cli-cmd">default-router 192.168.99.254</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. SECURITE (ACL) -->
+        <section id="security" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">09.</span> Sécurité : Access Control Lists</h2>
+            <div class="flex gap-8 items-start reveal">
+                <div class="flex-1">
+                    <div class="bg-cisco_red/10 border border-cisco_red/30 p-6 rounded-lg">
+                        <h3 class="text-cisco_red font-bold mb-2">Objectif Critique</h3>
+                        <p class="text-sm text-slate-300">Interdire strictement l'accès au VLAN 10 (Admin) depuis le VLAN 99 (Invité), tout en laissant les invités accéder à Internet.</p>
+                    </div>
+                    <p class="doc-p mt-6">
+                        Nous utilisons une <strong>ACL Étendue</strong> numérotée 100. Elle est appliquée en <strong>entrée (in)</strong> sur l'interface des invités pour filtrer le trafic dès son arrivée sur le routeur.
+                    </p>
+                </div>
+                <div class="flex-1 cli-window">
+                    <div class="cli-content font-mono text-xs">
+                        <span class="cli-comment">! 1. Deny Guest to Admin</span><br>
+                        <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">access-list 100 deny ip 192.168.99.0 0.0.0.255 192.168.10.0 0.0.0.255</span><br>
+                        <br>
+                        <span class="cli-comment">! 2. Permit Internet (Any)</span><br>
+                        <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">access-list 100 permit ip any any</span><br>
+                        <br>
+                        <span class="cli-comment">! 3. Apply to Interface</span><br>
+                        <span class="cli-prompt">Router(config)#</span> <span class="cli-cmd">interface gi0/0/1.99</span><br>
+                        <span class="cli-prompt">Router(config-subif)#</span> <span class="cli-cmd">ip access-group 100 in</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. VALIDATION (TERMINAL) -->
+        <section id="validation" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">10.</span> Validation & Tests</h2>
+            <div class="flex flex-col gap-6 reveal">
+                <div class="flex justify-between items-center">
+                    <p class="text-slate-400">Simulation d'un test de connectivité depuis un poste <strong>Créatif (VLAN 20)</strong> vers un serveur <strong>Admin (VLAN 10)</strong>.</p>
+                    <button onclick="startTerminal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-white text-sm font-bold border border-slate-600 transition">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Relancer Test
+                    </button>
+                </div>
+                
+                <div class="cli-window h-64 overflow-hidden relative">
+                    <div class="cli-header">
+                        <span>C:\Windows\system32\cmd.exe</span>
+                    </div>
+                    <div class="p-4 font-mono text-sm h-full" id="terminal-content">
+                        <!-- Typed by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. CONCLUSION -->
+        <section id="conclusion" class="py-24">
+            <div class="bg-card_bg border border-slate-700 p-10 rounded-2xl text-center reveal">
+                <div class="inline-block p-4 bg-cisco_green/10 rounded-full mb-6">
+                    <i class="fa-solid fa-flag-checkered text-4xl text-cisco_green"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-6">Bilan du Projet</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left max-w-4xl mx-auto">
+                    <div class="p-4 border-l-4 border-cisco_blue bg-dark_bg rounded">
+                        <h4 class="font-bold text-white mb-1">Performance</h4>
+                        <p class="text-xs text-slate-400">Fin des Broadcast Storms grâce à la segmentation VLAN.</p>
+                    </div>
+                    <div class="p-4 border-l-4 border-cisco_green bg-dark_bg rounded">
+                        <h4 class="font-bold text-white mb-1">Services</h4>
+                        <p class="text-xs text-slate-400">Adressage automatique et évolutif via DHCP centralisé.</p>
+                    </div>
+                    <div class="p-4 border-l-4 border-cisco_red bg-dark_bg rounded">
+                        <h4 class="font-bold text-white mb-1">Sécurité</h4>
+                        <p class="text-xs text-slate-400">Isolation stricte du réseau sensible Admin via ACLs.</p>
+                    </div>
+                </div>
+                <p class="mt-10 text-slate-500 text-sm">Mission accomplie. Le réseau est optimisé et sécurisé.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. SCROLL REVEAL
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+
+        // 2. PACKET ANIMATION LOGIC
+        function playPacketAnim() {
+            const packet = document.getElementById('packet');
+            const status = document.getElementById('anim-status');
+            if(!packet) return;
+
+            // Reset
+            packet.style.transition = 'none';
+            packet.style.display = 'block';
+            packet.style.top = '75%'; // PC Admin Level
+            packet.style.left = '25%'; // PC Admin X
+            packet.style.backgroundColor = '#ef4444'; // Red (Admin Packet)
+            status.innerText = "Envoi paquet depuis PC-ADMIN (VLAN 10)...";
+
+            // Step 1: To Switch
+            setTimeout(() => {
+                packet.style.transition = 'all 1s linear';
+                packet.style.top = '50%';
+                packet.style.left = '50%';
+            }, 100);
+
+            // Step 2: Up Trunk to Router
+            setTimeout(() => {
+                packet.style.top = '20%'; // Router Level
+                status.innerText = "Trunk: Paquet Tagué [VLAN 10]. Routage vers VLAN 20...";
+                packet.style.backgroundColor = '#a855f7'; // Purple (Processing)
+            }, 1100);
+
+            // Step 3: Down Trunk to Switch
+            setTimeout(() => {
+                packet.style.top = '50%'; // Switch Level
+                status.innerText = "Retour Switch: Paquet Tagué [VLAN 20]...";
+                packet.style.backgroundColor = '#22c55e'; // Green (Creatif Packet)
+            }, 2100);
+
+            // Step 4: To PC Creatif
+            setTimeout(() => {
+                packet.style.top = '75%';
+                packet.style.left = '75%'; // PC Creatif X
+                status.innerText = "Succès ! Reçu par PC-CREATIF.";
+            }, 3100);
+
+            setTimeout(() => { packet.style.display = 'none'; }, 4500);
+        }
+
+        // 3. TERMINAL ANIMATION LOGIC
+        const termLines = [
+            { text: "C:\\Users\\Graphiste> ipconfig", type: "cmd" },
+            { text: "   Adresse IPv4. . . . . . . . . . . : 192.168.20.15", type: "out" },
+            { text: "   Passerelle par défaut . . . . . . : 192.168.20.254", type: "out" },
+            { text: "", type: "out" },
+            { text: "C:\\Users\\Graphiste> ping 192.168.10.254", type: "cmd" },
+            { text: "Envoi d'une requête 'Ping' 192.168.10.254 avec 32 octets de données :", type: "out" },
+            { text: "Réponse de 192.168.10.254 : octets=32 temps=1ms TTL=255", type: "success" },
+            { text: "Réponse de 192.168.10.254 : octets=32 temps<1ms TTL=255", type: "success" },
+            { text: "", type: "out" },
+            { text: "C:\\Users\\Graphiste> _", type: "cmd" }
+        ];
+
+        function startTerminal() {
+            const div = document.getElementById('terminal-content');
+            div.innerHTML = "";
+            let lineIndex = 0;
+
+            function typeLine() {
+                if (lineIndex >= termLines.length) return;
+                
+                const line = termLines[lineIndex];
+                const p = document.createElement('div');
+                p.className = "mb-1";
+                if(line.type === 'success') p.style.color = '#22c55e';
+                div.appendChild(p);
+
+                if (line.type === 'cmd' && !line.text.endsWith('_')) {
+                    let charIndex = 0;
+                    const interval = setInterval(() => {
+                        p.textContent += line.text[charIndex];
+                        charIndex++;
+                        if (charIndex >= line.text.length) {
+                            clearInterval(interval);
+                            lineIndex++;
+                            setTimeout(typeLine, 300);
+                        }
+                    }, 30);
+                } else {
+                    p.textContent = line.text;
+                    lineIndex++;
+                    setTimeout(typeLine, 150);
+                }
+            }
+            typeLine();
+        }
+    </script>
+</body>
+</html>

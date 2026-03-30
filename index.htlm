@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOUNES BOUIZERGANE | PORTFOLIO SISR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Simulation de la typographie SpaceX */
+        h1, h2, h3, .nav-link {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .section-bg {
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 10vh;
+            padding-left: 5%;
+            position: relative;
+        }
+
+        .section-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%);
+        }
+
+        .btn-spacex {
+            position: relative;
+            padding: 15px 40px;
+            border: 2px solid #fff;
+            color: #fff;
+            font-weight: 700;
+            overflow: hidden;
+            transition: color 0.3s ease;
+            z-index: 1;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn-spacex::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: #fff;
+            transition: height 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn-spacex:hover {
+            color: #000;
+        }
+
+        .btn-spacex:hover::after {
+            height: 100%;
+        }
+
+        /* Barre de défilement personnalisée */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        nav {
+            transition: background 0.3s ease;
+        }
+
+        .nav-scrolled {
+            background: rgba(0,0,0,0.9);
+            padding: 10px 0;
+        }
+
+        .project-meta {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .about-text {
+            max-width: 600px;
+            font-weight: 300;
+            line-height: 1.8;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 px-10 py-6 flex justify-between items-center">
+        <div class="text-2xl font-black tracking-tighter">
+            YOUNES <span class="font-light">B.</span>
+        </div>
+        <div class="hidden md:flex space-x-8">
+            <a href="#about" class="nav-link text-xs hover:border-b border-white transition-all">À Propos</a>
+            <a href="#missions" class="nav-link text-xs hover:border-b border-white transition-all">Missions E5</a>
+            <a href="#patrimoine" class="nav-link text-xs hover:border-b border-white transition-all">Patrimoine E6</a>
+            <a href="#veille" class="nav-link text-xs hover:border-b border-white transition-all">Veille</a>
+            <a href="#contact" class="nav-link text-xs hover:border-b border-white transition-all">Contact</a>
+        </div>
+        <div class="md:hidden text-xl"><i class="fa-solid fa-bars"></i></div>
+    </nav>
+
+    <!-- Section d'accueil (Hero) -->
+    <section id="hero" class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 reveal active">
+            <h2 class="text-xl mb-2 font-light">BTS SIO • Option SISR</h2>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6">Younes Bouizergane</h1>
+            <p class="text-xl mb-8 font-light opacity-80">Conception et sécurisation d'infrastructures informatiques.</p>
+            <a href="#about" class="btn-spacex">DÉMARRER L'EXPLORATION</a>
+        </div>
+    </section>
+
+    <!-- Section À Propos -->
+    <section id="about" class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 reveal">
+            <h2 class="text-xl mb-2 font-light">Présentation</h2>
+            <h1 class="text-5xl font-bold mb-6">À PROPOS DE MOI</h1>
+            <div class="about-text mb-10">
+                <p class="mb-4 text-lg">
+                    Passionné par l'architecture des systèmes et la cybersécurité, je suis actuellement étudiant en BTS SIO (Services Informatiques aux Organisations) spécialité SISR.
+                </p>
+                <p>
+                    Mon parcours est guidé par une curiosité constante pour les technologies de pointe. Je me spécialise dans le déploiement de serveurs, la sécurisation des flux réseaux et l'automatisation des infrastructures. Mon objectif est de concevoir des environnements IT résilients, performants et évolutifs.
+                </p>
+            </div>
+            <div class="flex gap-4">
+                <div class="border-l-2 border-white pl-4">
+                    <span class="block text-xs uppercase opacity-50">Localisation</span>
+                    <span class="font-bold">Paris, France</span>
+                </div>
+                <div class="border-l-2 border-white pl-4">
+                    <span class="block text-xs uppercase opacity-50">Spécialité</span>
+                    <span class="font-bold">Systèmes & Réseaux</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission HSRP -->
+    <section id="missions" class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef526b0042a0?q=80&w=2030&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 max-w-2xl px-4 reveal">
+            <div class="project-meta">E5-01 • MEDISANTÉ 24/7</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">HAUTE DISPONIBILITÉ HSRP</h2>
+            <p class="text-slate-300 mb-8 text-sm md:text-base leading-relaxed">
+                Implémentation d'une architecture Cisco redondante pour garantir une disponibilité réseau de 99.999% pour un service d'urgence médicale.
+            </p>
+            <a href="HRSP.html" class="btn-spacex">VOIR LE DOSSIER</a>
+        </div>
+    </section>
+
+    <!-- Mission DMZ -->
+    <section class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2070&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 max-w-2xl px-4 reveal">
+            <div class="project-meta">E5-02 • GREEN-TECH SOLUTIONS</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">SÉCURISATION DMZ PFSENSE</h2>
+            <p class="text-slate-300 mb-8 text-sm md:text-base leading-relaxed">
+                Segmentation réseau avancée via pfSense. Création d'une zone démilitarisée pour isoler les services web exposés du LAN de l'entreprise.
+            </p>
+            <a href="DMZ.html" class="btn-spacex">ANALYSE TECHNIQUE</a>
+        </div>
+    </section>
+
+    <!-- Mission IAM/AD -->
+    <section class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 max-w-2xl px-4 reveal">
+            <div class="project-meta">E5-03 • ECOBATI SUD</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">ARCHITECTURE IAM MULTI-SITES</h2>
+            <p class="text-slate-300 mb-8 text-sm md:text-base leading-relaxed">
+                Centralisation et gestion des identités via Active Directory sur Windows Server 2022 pour une entreprise en hyper-croissance répartie sur deux sites.
+            </p>
+            <a href="architecture_IAM.html" class="btn-spacex">DÉTAILS DU PROJET</a>
+        </div>
+    </section>
+
+    <!-- Mission ESXi -->
+    <section class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1597733336794-12d05021d510?q=80&w=2074&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 max-w-2xl px-4 reveal">
+            <div class="project-meta">E5-04 • VMWARE VIRTUALISATION</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">HYPERVISEUR BARE METAL ESXI</h2>
+            <p class="text-slate-300 mb-8 text-sm md:text-base leading-relaxed">
+                Consolidation d'une infrastructure physique vers un environnement virtualisé VMware. Optimisation des ressources et réduction des coûts.
+            </p>
+            <a href="virtualistaion.html" class="btn-spacex">DÉMONSTRATION</a>
+        </div>
+    </section>
+
+    <!-- Mission VPN SSL -->
+    <section class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=2070&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 max-w-2xl px-4 reveal">
+            <div class="project-meta">E5-05 • VPN SSL PFSENSE</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">ACCÈS DISTANTS SÉCURISÉS</h2>
+            <p class="text-slate-300 mb-8 text-sm md:text-base leading-relaxed">
+                Mise en œuvre d'un tunnel OpenVPN avec authentification par certificats X.509 pour les collaborateurs nomades de TechSolutions.
+            </p>
+            <a href="dossier_vpn.html" class="btn-spacex">PROTOCOLE DE SÉCURITÉ</a>
+        </div>
+    </section>
+
+    <!-- Mission Patrimoine (VLAN) -->
+    <section id="patrimoine" class="section-bg" style="background-image: url('https://images.unsplash.com/photo-1510511459019-5dee667ff1f6?q=80&w=2070&auto=format&fit=crop');">
+        <div class="section-overlay"></div>
+        <div class="relative z-10 max-w-2xl px-4 reveal">
+            <div class="project-meta">E6-01 • MÉDIACOM HORIZON</div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">SEGMENTATION VLAN & ROUTAGE</h2>
+            <p class="text-slate-300 mb-8 text-sm md:text-base leading-relaxed">
+                Réorganisation d'un réseau local plat vers une architecture segmentée. Routage inter-VLAN et filtrage par ACL pour sécuriser les données.
+            </p>
+            <a href="reseau_local.html" class="btn-spacex">RÉALISATION TECHNIQUE</a>
+        </div>
+    </section>
+
+    <!-- Section Veille (WiFi 7) -->
+    <section id="veille" class="py-32 px-10 bg-white text-black">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-6xl font-bold mb-16 border-b-8 border-black pb-4 reveal">VEILLE TECHNOLOGIQUE</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-20">
+                <div class="reveal">
+                    <h3 class="text-3xl font-bold mb-6">WI-FI 7 : LA RÉVOLUTION 802.11BE</h3>
+                    <p class="text-lg leading-relaxed mb-10 text-justify">
+                        Le Wi-Fi 7 marque un tournant majeur dans les communications sans fil. Avec l'introduction du Multi-Link Operation (MLO) et des canaux de 320 MHz, il promet des débits dépassant les 40 Gbps. Ma veille porte sur l'optimisation de la latence pour les infrastructures industrielles et l'usage de la modulation 4K-QAM pour une densité de données accrue.
+                    </p>
+                    <a href="#" class="text-sm font-bold border-b-2 border-black pb-1 hover:opacity-50 transition">ACCÉDER AU DOSSIER DE VEILLE</a>
+                </div>
+                <div class="bg-black text-white p-12 reveal">
+                    <h4 class="text-xs tracking-widest mb-4 opacity-50 uppercase">Points clés WiFi 7</h4>
+                    <ul class="space-y-6">
+                        <li class="flex items-center gap-4">
+                            <i class="fa-solid fa-bolt text-2xl text-blue-400"></i>
+                            <div>
+                                <span class="block font-bold">MLO (Multi-Link Operation)</span>
+                                <span class="text-xs opacity-60">Agrégation de bandes 2.4, 5 et 6 GHz</span>
+                            </div>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <i class="fa-solid fa-gauge-high text-2xl text-green-400"></i>
+                            <div>
+                                <span class="block font-bold">CANAUX 320 MHZ</span>
+                                <span class="text-xs opacity-60">Doublement de la bande passante par rapport au WiFi 6E</span>
+                            </div>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <i class="fa-solid fa-microchip text-2xl text-purple-400"></i>
+                            <div>
+                                <span class="block font-bold">MODULATION 4096-QAM</span>
+                                <span class="text-xs opacity-60">Efficacité spectrale augmentée de 20%</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications & Contact -->
+    <footer id="contact" class="py-24 px-10 text-center border-t border-white/10">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-5xl font-bold mb-16 reveal">PRÊT POUR LE PROCHAIN DÉPLOIEMENT ?</h2>
+            <div class="flex flex-wrap justify-center gap-8 mb-20 reveal">
+                <a href="mailto:wesley.amv16@gmail.com" class="btn-spacex">ENVOYER UN MAIL</a>
+                <a href="#" class="btn-spacex">LINKEDIN</a>
+                <a href="#" class="btn-spacex">TÉLÉCHARGER CV</a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mb-20 reveal">
+                <div class="border border-white/20 p-6 flex items-center gap-4">
+                    <i class="fa-solid fa-shield-halved text-3xl"></i>
+                    <div>
+                        <h4 class="font-bold">ANSSI - EBIOS RM</h4>
+                        <p class="text-xs opacity-50">Certification Gestion des Risques</p>
+                    </div>
+                </div>
+                <div class="border border-white/20 p-6 flex items-center gap-4">
+                    <i class="fa-solid fa-network-wired text-3xl"></i>
+                    <div>
+                        <h4 class="font-bold">CISCO CYBERSECURITY</h4>
+                        <p class="text-xs opacity-50">Introduction to Cybersecurity</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[10px] tracking-[5px] opacity-30">© 2026 YOUNES BOUIZERGANE • SISR ENGINEER • INSPIRED BY AEROSPACE</p>
+        </div>
+    </footer>
+
+    <script>
+        // Logique de révélation au défilement (Scroll Reveal)
+        const observerOptions = {
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Changement de fond de la navigation au scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('nav-scrolled');
+            } else {
+                nav.classList.remove('nav-scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

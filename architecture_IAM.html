@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dossier E5 - EcoBati Sud | Younes B.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        eco_dark: '#0f172a',
+                        eco_card: '#1e293b',
+                        eco_orange: '#f97316',
+                        eco_blue: '#3b82f6',
+                        eco_green: '#10b981',
+                        win_blue: '#0078d4',
+                        win_bg: '#f3f3f3',
+                        win_border: '#d1d1d1'
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        win: ['"Segoe UI"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'flow': 'flow 2s linear infinite',
+                    },
+                    keyframes: {
+                        flow: {
+                            '0%': { strokeDashoffset: '20' },
+                            '100%': { strokeDashoffset: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; }
+        
+        /* ANIMATION SECURISEE */
+        .reveal { 
+            opacity: 1; 
+            transform: translateY(0); 
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out; 
+        }
+        .reveal-hidden { 
+            opacity: 0; 
+            transform: translateY(30px); 
+        }
+        
+        /* Windows Server UI Simulation Styles */
+        .win-window {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #0078d4;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .win-titlebar {
+            background-color: #ffffff;
+            padding: 6px 12px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .win-menu {
+            background-color: #f3f3f3;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-bottom: 1px solid #d1d1d1;
+            display: flex;
+            gap: 12px;
+        }
+        .win-content {
+            display: flex;
+            height: 350px;
+            background-color: #ffffff;
+        }
+        .win-tree {
+            width: 220px;
+            border-right: 1px solid #d1d1d1;
+            padding: 8px;
+            font-size: 11px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .win-list {
+            flex: 1;
+            padding: 0;
+            font-size: 11px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .win-list-header {
+            display: flex;
+            background-color: #fff;
+            border-bottom: 1px solid #d1d1d1;
+            padding: 4px 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .win-list-item {
+            display: flex;
+            padding: 4px 8px;
+            cursor: default;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .win-list-item:hover { background-color: #e5f3ff; }
+        
+        /* CLI Window */
+        .cli-window {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #012456;
+            color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        
+        /* Styles Documentation Textuelle */
+        .doc-block { @apply mb-8 p-6 bg-card/30 rounded-lg border border-white/5; }
+        .doc-h2 { @apply text-3xl font-bold text-white mb-8 flex items-center gap-3 border-b border-slate-700 pb-4; }
+        .doc-h3 { @apply text-xl font-bold text-eco_orange mb-4 mt-2 flex items-center gap-2; }
+        .doc-h4 { @apply text-lg font-bold text-white mb-2 mt-4; }
+        .doc-p { @apply text-slate-400 text-sm leading-relaxed mb-4 text-justify; }
+        .doc-ul { @apply list-disc list-inside text-slate-400 text-sm space-y-2 mb-4 ml-4; }
+        .doc-strong { @apply text-white font-bold; }
+
+        /* Packet Animation */
+        .packet {
+            width: 12px; height: 12px; border-radius: 50%;
+            position: absolute; z-index: 50; display: none;
+            box-shadow: 0 0 10px currentColor;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-80 bg-eco_card border-r border-slate-700 flex-col hidden xl:flex z-50">
+        <div class="p-6 border-b border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-eco_orange rounded flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    <i class="fa-brands fa-windows"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white leading-none">EcoBati Sud</h1>
+                    <span class="text-xs text-eco_orange font-mono">PROJET IAM E5</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1 text-xs font-medium text-slate-400">
+            <p class="px-3 mb-2 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Stratégie & Analyse</p>
+            <a href="#intro" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">1. Accueil</a>
+            <a href="#context" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">2. Contexte Entreprise</a>
+            <a href="#problematic" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">3. Problématique</a>
+            <a href="#requirements" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition border-l-2 border-eco_orange pl-2 bg-white/5">4. Cahier des Charges</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Architecture Technique</p>
+            <a href="#topology" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">5. Topologie Multi-Sites</a>
+            <a href="#server-manager" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">6. Installation AD DS</a>
+            <a href="#sites-services" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">7. Réplication & Sites</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Gestion Identités (IAM)</p>
+            <a href="#aduc" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">8. Structure OUs & Objets</a>
+            <a href="#dns" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">9. DNS & Résolution</a>
+            <a href="#dhcp" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">10. DHCP Scopes</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Automatisation & Sécu</p>
+            <a href="#gpo" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">11. GPO & Ciblage</a>
+            <a href="#powershell" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">12. PowerShell Bulk</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-slate-600 font-bold">Continuité & MCO</p>
+            <a href="#dfs" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-eco_green transition font-bold"><i class="fa-solid fa-share-nodes w-4 mr-2"></i> 13. DFS & Fichiers</a>
+            <a href="#pra" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition"><i class="fa-solid fa-heart-pulse w-4 mr-2"></i> 14. PRA / FSMO</a>
+            <a href="#backup" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-red-400 transition font-bold"><i class="fa-solid fa-box-archive w-4 mr-2"></i> 15. Sauvegarde AD</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto scroll-smooth p-8 lg:p-12 max-w-[1600px] mx-auto">
+        
+        <!-- 1. INTRO -->
+        <section id="intro" class="min-h-[80vh] flex flex-col justify-center items-center text-center border-b border-slate-800">
+            <div class="inline-block p-6 rounded-full bg-eco_orange/10 border border-eco_orange/30 mb-8 animate-bounce">
+                <i class="fa-brands fa-windows text-6xl text-eco_orange"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
+                ARCHITECTURE IAM <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-eco_orange to-eco_blue">MULTI-SITES SÉCURISÉE</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-10 max-w-3xl mx-auto">
+                Projet EcoBati Sud : Centralisation des identités, Haute Disponibilité et Continuité de Service sur Windows Server 2022.
+            </p>
+            
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 w-full max-w-5xl mt-8">
+                <div class="bg-eco_card p-6 rounded border-t-4 border-eco_blue shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">150</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Utilisateurs Centralisés</div>
+                </div>
+                <div class="bg-eco_card p-6 rounded border-t-4 border-eco_orange shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">2</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Sites (Lyon/Marseille)</div>
+                </div>
+                <div class="bg-eco_card p-6 rounded border-t-4 border-eco_green shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">99.9%</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Disponibilité AD</div>
+                </div>
+                <div class="bg-eco_card p-6 rounded border-t-4 border-red-500 shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">PRA</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Plan de Reprise Actif</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. CONTEXTE -->
+        <section id="context" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">02.</span> Contexte de l'Organisation</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="doc-block">
+                    <h3 class="doc-h3"><i class="fa-solid fa-building"></i> Présentation d'EcoBati Sud</h3>
+                    <p class="doc-p">
+                        <strong>EcoBati Sud</strong> est une entreprise française spécialisée dans la rénovation énergétique des bâtiments (isolation, solaire, pompes à chaleur). Fondée en 2018, elle connaît une phase d'<strong>hyper-croissance</strong> portée par les nouvelles réglementations environnementales.
+                    </p>
+                    <p class="doc-p">
+                        L'entreprise est passée de 15 à <strong>150 collaborateurs</strong> en moins de 24 mois. Cette expansion rapide a entraîné l'ouverture d'une agence stratégique à Marseille pour couvrir le sud-est, en complément du siège historique à Lyon.
+                    </p>
+                    <ul class="doc-ul">
+                        <li><strong>Siège (Lyon) :</strong> Direction, RH, Finance, IT (100 personnes).</li>
+                        <li><strong>Agence (Marseille) :</strong> Commerciaux, Techniciens, Logistique (50 personnes).</li>
+                    </ul>
+                </div>
+
+                <div class="doc-block border-red-500/30 bg-red-900/10">
+                    <h3 class="doc-h3 text-red-500"><i class="fa-solid fa-triangle-exclamation"></i> Diagnostic de l'Existant (Legacy)</h3>
+                    <p class="doc-p">
+                        Le système d'information n'a pas suivi la croissance de l'entreprise. L'audit initial révèle une infrastructure de type "Workgroup" (Groupe de travail) devenue ingérable et dangereuse.
+                    </p>
+                    <div class="space-y-4 mt-4">
+                        <div class="flex gap-3 items-start">
+                            <div class="bg-red-500/20 p-2 rounded text-red-400"><i class="fa-solid fa-users-slash"></i></div>
+                            <div>
+                                <h4 class="text-white text-sm font-bold">Gestion Décentralisée</h4>
+                                <p class="text-xs text-slate-400">Chaque ordinateur gère sa propre base d'utilisateurs (SAM locale). Impossible d'appliquer une politique de mot de passe globale.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 items-start">
+                            <div class="bg-red-500/20 p-2 rounded text-red-400"><i class="fa-solid fa-file-shield"></i></div>
+                            <div>
+                                <h4 class="text-white text-sm font-bold">Données à Risque</h4>
+                                <p class="text-xs text-slate-400">Les partages de fichiers sont ouverts à "Tout le monde" car il n'y a pas d'identité commune. Risque critique de fuite de données.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 items-start">
+                            <div class="bg-red-500/20 p-2 rounded text-red-400"><i class="fa-solid fa-network-wired"></i></div>
+                            <div>
+                                <h4 class="text-white text-sm font-bold">Isolation des Sites</h4>
+                                <p class="text-xs text-slate-400">Aucune communication sécurisée entre Lyon et Marseille. Les collaborateurs ne peuvent pas accéder aux ressources s'ils changent de site.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. PROBLEMATIQUE -->
+        <section id="problematic" class="py-24 border-b border-slate-800">
+            <div class="bg-gradient-to-r from-eco_card to-transparent p-10 rounded-2xl border-l-4 border-eco_orange">
+                <span class="text-eco_orange font-bold tracking-widest uppercase text-xs mb-4 block">Problématique Générale</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 leading-relaxed font-serif italic">
+                    "Comment industrialiser la gestion des identités et des accès (IAM) pour accompagner l'hyper-croissance d'EcoBati, tout en garantissant la sécurité des données et la continuité d'activité sur une architecture multi-sites ?"
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                    <div class="border border-white/10 p-4 rounded bg-dark/50">
+                        <h4 class="text-eco_blue font-bold text-sm mb-2">Sous-question 1</h4>
+                        <p class="text-xs text-slate-400">Comment centraliser l'administration de 150 postes et utilisateurs dispersés géographiquement ?</p>
+                    </div>
+                    <div class="border border-white/10 p-4 rounded bg-dark/50">
+                        <h4 class="text-eco_orange font-bold text-sm mb-2">Sous-question 2</h4>
+                        <p class="text-xs text-slate-400">Quels mécanismes mettre en œuvre pour sécuriser l'accès aux fichiers sensibles (RH, Finance) ?</p>
+                    </div>
+                    <div class="border border-white/10 p-4 rounded bg-dark/50">
+                        <h4 class="text-eco_green font-bold text-sm mb-2">Sous-question 3</h4>
+                        <p class="text-xs text-slate-400">Comment assurer qu'une panne à Lyon ne paralyse pas l'agence de Marseille (PRA) ?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CAHIER DES CHARGES (NOUVEAU) -->
+        <section id="requirements" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">04.</span> Cahier des Charges</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Besoins Fonctionnels -->
+                <div class="doc-block">
+                    <h3 class="doc-h3"><i class="fa-solid fa-list-check"></i> Besoins Fonctionnels</h3>
+                    <p class="doc-p">Le système cible doit permettre de :</p>
+                    <ul class="doc-ul">
+                        <li><strong class="doc-strong">Authentification Unique (SSO) :</strong> Un seul couple login/mot de passe pour accéder à l'ordinateur, aux fichiers, et aux applications.</li>
+                        <li><strong class="doc-strong">Mobilité :</strong> Un utilisateur de Lyon doit pouvoir se connecter sur un PC à Marseille et retrouver son environnement.</li>
+                        <li><strong class="doc-strong">Travail Collaboratif :</strong> Accès à des dossiers partagés communs (Public) et restreints (Service).</li>
+                        <li><strong class="doc-strong">Standardisation :</strong> Déploiement automatique des imprimantes et lecteurs réseau selon le service de l'utilisateur.</li>
+                    </ul>
+                </div>
+
+                <!-- Besoins Techniques -->
+                <div class="doc-block">
+                    <h3 class="doc-h3"><i class="fa-solid fa-server"></i> Besoins Techniques</h3>
+                    <p class="doc-p">L'infrastructure doit respecter les contraintes suivantes :</p>
+                    <ul class="doc-ul">
+                        <li><strong class="doc-strong">OS Serveur :</strong> Microsoft Windows Server 2022 (Standard Edition).</li>
+                        <li><strong class="doc-strong">Annuaire :</strong> Active Directory Domain Services (AD DS).</li>
+                        <li><strong class="doc-strong">Haute Disponibilité :</strong> Au moins un Contrôleur de Domaine (DC) par site physique.</li>
+                        <li><strong class="doc-strong">Adressage :</strong> Plan d'adressage IP hiérarchique et services DNS/DHCP redondants.</li>
+                        <li><strong class="doc-strong">Sécurité :</strong> Application du modèle AGDLP pour les permissions NTFS.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. TOPOLOGIE -->
+        <section id="topology" class="py-24 border-b border-slate-800">
+            <div class="flex justify-between items-end mb-8 reveal">
+                <h2 class="doc-h2 mb-0 border-none"><span class="text-slate-600">05.</span> Topologie Multi-Sites</h2>
+                <button onclick="playVPNAnim()" class="px-4 py-2 bg-eco_blue hover:bg-blue-600 rounded text-white text-sm font-bold transition shadow-lg">
+                    <i class="fa-solid fa-play mr-2"></i> Simuler Réplication
+                </button>
+            </div>
+
+            <p class="doc-p mb-8">
+                L'architecture repose sur une interconnexion <strong>VPN IPsec Site-à-Site</strong>. Chaque site dispose de son propre sous-réseau IP et de son propre Contrôleur de Domaine (DC). Cette architecture "Active-Active" permet aux utilisateurs de s'authentifier localement même si le lien VPN est coupé.
+            </p>
+
+            <div class="relative w-full h-[400px] bg-slate-800/50 rounded-xl border border-slate-700 shadow-2xl overflow-hidden reveal delay-100" id="schema-container">
+                <!-- Site LYON -->
+                <div class="absolute left-[10%] top-1/2 -translate-y-1/2 w-64 p-6 border-2 border-eco_blue rounded-xl bg-eco_card z-20">
+                    <div class="absolute -top-3 left-4 bg-eco_blue text-white text-xs font-bold px-2 rounded">SITE: LYON (PDC)</div>
+                    <div class="flex flex-col items-center text-center">
+                        <i class="fa-solid fa-server text-4xl text-white mb-2"></i>
+                        <span class="font-bold text-white">SRV-AD-LYON</span>
+                        <span class="text-xs text-slate-400 font-mono">192.168.10.10</span>
+                        <span class="text-[10px] text-eco_green mt-1 bg-green-900/30 px-2 rounded">FSMO Roles Holder</span>
+                    </div>
+                </div>
+                <!-- Site MARSEILLE -->
+                <div class="absolute right-[10%] top-1/2 -translate-y-1/2 w-64 p-6 border-2 border-eco_orange rounded-xl bg-eco_card z-20">
+                    <div class="absolute -top-3 left-4 bg-eco_orange text-white text-xs font-bold px-2 rounded">SITE: MARSEILLE</div>
+                    <div class="flex flex-col items-center text-center">
+                        <i class="fa-solid fa-server text-4xl text-white mb-2"></i>
+                        <span class="font-bold text-white">SRV-AD-MRS</span>
+                        <span class="text-xs text-slate-400 font-mono">192.168.20.10</span>
+                        <span class="text-[10px] text-slate-500 mt-1 bg-slate-900 px-2 rounded">Read-Write DC</span>
+                    </div>
+                </div>
+                <!-- Tunnel -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-16 border-y-2 border-dashed border-slate-600 flex items-center justify-center bg-black/20 rounded-lg">
+                    <span class="text-xs font-mono text-slate-500 bg-slate-900 px-2">TUNNEL VPN IPSEC</span>
+                </div>
+                <!-- Packet -->
+                <div id="packet" class="packet bg-eco_green shadow-[0_0_15px_#10b981] transition-all duration-100 ease-linear"></div>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+                    <span id="anim-status" class="text-xs font-mono text-eco_green bg-black/50 px-3 py-1 rounded border border-slate-700">Liaison inactive...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. INSTALLATION AD DS -->
+        <section id="server-manager" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">06.</span> Installation AD DS & Promotion</h2>
+            
+            <div class="flex flex-col md:flex-row gap-8 items-start reveal">
+                <div class="w-full md:w-1/3">
+                    <p class="doc-p">
+                        L'installation commence par l'ajout du rôle "AD DS" via le Server Manager. Ensuite, le serveur est promu en tant que premier Contrôleur de Domaine d'une <strong>Nouvelle Forêt</strong>.
+                    </p>
+                    <div class="bg-eco_card p-4 rounded text-xs text-slate-300 border-l-4 border-eco_blue mb-4">
+                        <h4 class="font-bold text-white mb-2">Paramètres de la Forêt :</h4>
+                        <ul class="space-y-1">
+                            <li><strong>Nom de domaine racine :</strong> ecobati.lan</li>
+                            <li><strong>Niveau fonctionnel :</strong> Windows Server 2016 (pour compatibilité).</li>
+                            <li><strong>DSRM Password :</strong> Défini et stocké en coffre-fort.</li>
+                        </ul>
+                    </div>
+                    <p class="doc-p">
+                        Le service DNS est installé automatiquement car l'AD ne peut fonctionner sans lui (enregistrements SRV).
+                    </p>
+                </div>
+
+                <!-- FAKE WINDOWS SCREEN: SERVER MANAGER -->
+                <div class="w-full md:w-2/3 win-window h-[350px]">
+                    <div class="win-titlebar">Server Manager</div>
+                    <div class="win-content bg-[#f2f2f2] p-4">
+                        <div class="w-full bg-white border border-gray-300 p-4 shadow-sm">
+                            <h3 class="text-black mb-4 font-light text-2xl">Dashboard</h3>
+                            
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="p-4 bg-white border hover:bg-blue-50 cursor-pointer border-l-4 border-l-blue-500 shadow-sm">
+                                    <div class="font-bold text-sm text-gray-700">Add roles and features</div>
+                                </div>
+                                <div class="p-4 bg-white border hover:bg-blue-50 cursor-pointer border-l-4 border-l-blue-500 shadow-sm">
+                                    <div class="font-bold text-sm text-gray-700">Add other servers to manage</div>
+                                </div>
+                                <div class="p-4 bg-white border hover:bg-blue-50 cursor-pointer border-l-4 border-l-blue-500 shadow-sm">
+                                    <div class="font-bold text-sm text-gray-700">Create Server Group</div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-sm font-bold text-gray-600 mb-2 border-b pb-1">ROLES AND SERVER GROUPS</div>
+                            <div class="flex gap-4">
+                                <div class="w-32 h-24 bg-green-600 text-white p-3 flex flex-col justify-between shadow">
+                                    <span class="font-bold">AD DS</span>
+                                    <div class="text-right text-xs">Online</div>
+                                </div>
+                                <div class="w-32 h-24 bg-green-600 text-white p-3 flex flex-col justify-between shadow">
+                                    <span class="font-bold">DNS</span>
+                                    <div class="text-right text-xs">Online</div>
+                                </div>
+                                <div class="w-32 h-24 bg-green-600 text-white p-3 flex flex-col justify-between shadow">
+                                    <span class="font-bold">File Services</span>
+                                    <div class="text-right text-xs">Online</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. SITES & SERVICES -->
+        <section id="sites-services" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">07.</span> Sites & Services Active Directory</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 reveal">
+                <div class="win-window h-[300px]">
+                    <div class="win-titlebar">Active Directory Sites and Services</div>
+                    <div class="win-content">
+                        <div class="win-tree">
+                            <div class="flex items-center gap-1 pl-1"><i class="fa-solid fa-folder text-yellow-500"></i> Sites</div>
+                            <!-- Site Lyon -->
+                            <div class="flex items-center gap-1 pl-4 bg-blue-100 border border-blue-300"><i class="fa-solid fa-building text-gray-500"></i> Site-Lyon</div>
+                            <div class="flex items-center gap-1 pl-8"><i class="fa-solid fa-server text-gray-500"></i> Servers</div>
+                            <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-computer text-gray-500"></i> SRV-AD-LYON</div>
+                            <!-- Site Marseille -->
+                            <div class="flex items-center gap-1 pl-4"><i class="fa-solid fa-building text-gray-500"></i> Site-Marseille</div>
+                            <div class="flex items-center gap-1 pl-8"><i class="fa-solid fa-server text-gray-500"></i> Servers</div>
+                            <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-computer text-gray-500"></i> SRV-AD-MRS</div>
+                            <!-- Subnets -->
+                            <div class="flex items-center gap-1 pl-4"><i class="fa-solid fa-folder text-yellow-500"></i> Subnets</div>
+                            <div class="flex items-center gap-1 pl-4"><i class="fa-solid fa-folder text-yellow-500"></i> Inter-Site Transports</div>
+                        </div>
+                        <div class="win-list p-4">
+                            <div class="bg-gray-100 p-2 border border-gray-300">
+                                <h4 class="font-bold text-xs mb-2">NTDS Settings (Connection Object)</h4>
+                                <div class="text-xs grid grid-cols-2 gap-2">
+                                    <div>From Server:</div><div class="font-mono">SRV-AD-MRS</div>
+                                    <div>From Site:</div><div>Site-Marseille</div>
+                                    <div>Schedule:</div><div>Every 15 mins</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="doc-h3">Optimisation du Trafic</h3>
+                    <p class="doc-p">
+                        La console "Sites et Services" est cruciale dans une architecture multi-sites. Elle permet de déclarer la topologie physique du réseau à l'Active Directory.
+                    </p>
+                    <h4 class="doc-h4">Pourquoi c'est important ?</h4>
+                    <ul class="doc-ul">
+                        <li><strong>Authentification Locale :</strong> En associant le sous-réseau <code>192.168.20.0/24</code> au site "Marseille", l'AD dirige automatiquement les clients de Marseille vers leur DC local (SRV-AD-MRS). Cela évite de traverser le VPN pour se loguer (gain de temps et de bande passante).</li>
+                        <li><strong>Réplication Contrôlée :</strong> La réplication entre sites est configurée pour se faire toutes les 15 minutes (au lieu de l'instantané intra-site) afin de ne pas saturer le lien VPN.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. ADUC (USERS) -->
+        <section id="aduc" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">08.</span> Utilisateurs et Ordinateurs (ADUC)</h2>
+            <p class="doc-p reveal mb-8">
+                L'organisation logique de l'annuaire reflète la structure géographique et fonctionnelle de l'entreprise. Cette hiérarchie d'Unités d'Organisation (OU) permet d'appliquer des stratégies (GPO) fines.
+            </p>
+
+            <!-- FAKE WINDOWS SCREEN: ADUC -->
+            <div class="win-window h-[450px] reveal delay-100">
+                <div class="win-titlebar">Active Directory Users and Computers</div>
+                <div class="win-menu">File | Action | View | Help</div>
+                <div class="win-content">
+                    <div class="win-tree">
+                        <div class="flex items-center gap-1 pl-1"><i class="fa-brands fa-windows text-blue-800"></i> ecobati.lan</div>
+                        <div class="flex items-center gap-1 pl-4"><i class="fa-solid fa-folder text-yellow-500"></i> Builtin</div>
+                        <div class="flex items-center gap-1 pl-4"><i class="fa-solid fa-folder text-yellow-500"></i> Computers</div>
+                        
+                        <!-- OU STRUCTURE -->
+                        <div class="flex items-center gap-1 pl-4 font-bold bg-blue-50 border border-blue-200"><i class="fa-solid fa-building text-blue-500"></i> EcoBati (Racine)</div>
+                        
+                        <!-- LYON -->
+                        <div class="flex items-center gap-1 pl-8"><i class="fa-solid fa-building text-gray-500"></i> Lyon</div>
+                        <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-briefcase text-gray-500"></i> IT</div>
+                        <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-briefcase text-gray-500"></i> RH</div>
+                        <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-briefcase text-gray-500"></i> Direction</div>
+                        
+                        <!-- MARSEILLE -->
+                        <div class="flex items-center gap-1 pl-8"><i class="fa-solid fa-building text-gray-500"></i> Marseille</div>
+                        <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-briefcase text-gray-500"></i> Commercial</div>
+                        <div class="flex items-center gap-1 pl-12"><i class="fa-solid fa-briefcase text-gray-500"></i> Technique</div>
+                        
+                        <div class="flex items-center gap-1 pl-4"><i class="fa-solid fa-users text-gray-500"></i> Users</div>
+                    </div>
+                    
+                    <div class="win-list">
+                        <div class="win-list-header">
+                            <span class="w-1/4">Name</span>
+                            <span class="w-1/4">Type</span>
+                            <span class="w-1/2">Description</span>
+                        </div>
+                        <!-- User List Simulation -->
+                        <div class="win-list-item">
+                            <span class="w-1/4 flex items-center gap-2"><i class="fa-solid fa-user text-gray-600"></i> DUPONT Jean</span>
+                            <span class="w-1/4">User</span>
+                            <span class="w-1/2">Directeur Régional Sud</span>
+                        </div>
+                        <div class="win-list-item">
+                            <span class="w-1/4 flex items-center gap-2"><i class="fa-solid fa-user text-gray-600"></i> MARTIN Alice</span>
+                            <span class="w-1/4">User</span>
+                            <span class="w-1/2">Responsable Commerciale</span>
+                        </div>
+                        <div class="win-list-item">
+                            <span class="w-1/4 flex items-center gap-2"><i class="fa-solid fa-users text-gray-600"></i> GG_Commerciaux_MRS</span>
+                            <span class="w-1/4">Security Group</span>
+                            <span class="w-1/2">Groupe Global - Commerciaux Marseille</span>
+                        </div>
+                        <div class="win-list-item">
+                            <span class="w-1/4 flex items-center gap-2"><i class="fa-solid fa-desktop text-gray-600"></i> MRS-PC-001</span>
+                            <span class="w-1/4">Computer</span>
+                            <span class="w-1/2">Portable Surface Pro</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. DNS -->
+        <section id="dns" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">09.</span> DNS (Domain Name System)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 reveal">
+                <!-- Text -->
+                <div class="doc-block">
+                    <h3 class="doc-h3">Le rôle central du DNS</h3>
+                    <p class="doc-p">
+                        Dans un environnement Active Directory, le DNS est critique. Il permet aux clients de localiser les contrôleurs de domaine (via les enregistrements SRV) et d'assurer le bon fonctionnement de Kerberos.
+                    </p>
+                    <h4 class="doc-h4">Configuration Appliquée :</h4>
+                    <ul class="doc-ul">
+                        <li><strong>Zone Intégrée à l'AD :</strong> La zone <code>ecobati.lan</code> est stockée dans la base AD et répliquée automatiquement entre tous les DC.</li>
+                        <li><strong>Mises à jour dynamiques :</strong> Sécurisées uniquement (seuls les PC membres du domaine peuvent modifier leur enregistrement DNS).</li>
+                        <li><strong>Redondance :</strong> Les clients DHCP reçoivent les IP des deux serveurs DNS (Lyon et Marseille) pour garantir la résolution de noms même en cas de panne d'un site.</li>
+                    </ul>
+                </div>
+
+                <!-- FAKE WINDOWS SCREEN: DNS -->
+                <div class="win-window h-[300px]">
+                    <div class="win-titlebar">DNS Manager</div>
+                    <div class="win-content">
+                        <div class="win-tree" style="width: 180px;">
+                            <div class="pl-1"><i class="fa-solid fa-server text-gray-500"></i> SRV-AD-LYON</div>
+                            <div class="pl-4"><i class="fa-solid fa-folder text-yellow-500"></i> Forward Lookup Zones</div>
+                            <div class="pl-8 font-bold bg-blue-50"><i class="fa-solid fa-globe text-gray-500"></i> ecobati.lan</div>
+                            <div class="pl-8"><i class="fa-solid fa-folder text-gray-500"></i> _msdcs.ecobati.lan</div>
+                            <div class="pl-8"><i class="fa-solid fa-folder text-gray-500"></i> _sites</div>
+                            <div class="pl-8"><i class="fa-solid fa-folder text-gray-500"></i> _tcp</div>
+                            <div class="pl-4"><i class="fa-solid fa-folder text-yellow-500"></i> Reverse Lookup Zones</div>
+                        </div>
+                        <div class="win-list">
+                            <div class="win-list-header">Name / Type / Data</div>
+                            <div class="win-list-item"><span class="w-1/3">(same as parent)</span><span class="w-1/3">SOA</span><span class="w-1/3">[1], srv-ad-lyon...</span></div>
+                            <div class="win-list-item"><span class="w-1/3">(same as parent)</span><span class="w-1/3">NS</span><span class="w-1/3">srv-ad-lyon.ecobati.lan</span></div>
+                            <div class="win-list-item"><span class="w-1/3">(same as parent)</span><span class="w-1/3">NS</span><span class="w-1/3">srv-ad-mrs.ecobati.lan</span></div>
+                            <div class="win-list-item"><span class="w-1/3">srv-ad-lyon</span><span class="w-1/3">Host (A)</span><span class="w-1/3">192.168.10.10</span></div>
+                            <div class="win-list-item"><span class="w-1/3">srv-ad-mrs</span><span class="w-1/3">Host (A)</span><span class="w-1/3">192.168.20.10</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. DHCP -->
+        <section id="dhcp" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">10.</span> DHCP & Failover</h2>
+            <div class="win-window h-[350px] reveal">
+                <div class="win-titlebar">DHCP</div>
+                <div class="win-content">
+                    <div class="win-tree" style="width: 220px;">
+                        <div class="pl-1"><i class="fa-solid fa-server text-green-600"></i> srv-ad-lyon.ecobati.lan</div>
+                        <div class="pl-4"><i class="fa-solid fa-folder text-gray-500"></i> IPv4</div>
+                        <div class="pl-8 font-bold bg-blue-50"><i class="fa-solid fa-server text-blue-500"></i> Scope [10.0] Lyon</div>
+                        <div class="pl-12"><i class="fa-solid fa-folder text-yellow-500"></i> Address Pool</div>
+                        <div class="pl-12"><i class="fa-solid fa-folder text-yellow-500"></i> Address Leases</div>
+                        <div class="pl-12"><i class="fa-solid fa-folder text-yellow-500"></i> Scope Options</div>
+                        <div class="pl-4"><i class="fa-solid fa-folder text-gray-500"></i> IPv6</div>
+                    </div>
+                    <div class="win-list p-4">
+                        <h4 class="font-bold text-sm mb-2 text-gray-700 border-b pb-1">Scope Options</h4>
+                        <table class="w-full text-xs text-left border-collapse">
+                            <tr class="bg-gray-100 border-b"><th class="p-2 font-semibold">Option Name</th><th class="p-2 font-semibold">Vendor</th><th class="p-2 font-semibold">Value</th></tr>
+                            <tr class="border-b"><td class="p-2">003 Router</td><td class="p-2">Standard</td><td class="p-2">192.168.10.254</td></tr>
+                            <tr class="border-b"><td class="p-2">006 DNS Servers</td><td class="p-2">Standard</td><td class="p-2">192.168.10.10, 192.168.20.10</td></tr>
+                            <tr class="border-b"><td class="p-2">015 DNS Domain Name</td><td class="p-2">Standard</td><td class="p-2">ecobati.lan</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. GPO -->
+        <section id="gpo" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">11.</span> GPO : Lecteurs Réseau (GPP)</h2>
+            
+            <div class="flex flex-col md:flex-row gap-8 reveal">
+                <div class="md:w-1/3">
+                    <h3 class="doc-h3">Item-Level Targeting</h3>
+                    <p class="doc-p">
+                        Plutôt que de créer des scripts de connexion VBS obsolètes, j'utilise les <strong>Group Policy Preferences (GPP)</strong>.
+                    </p>
+                    <p class="doc-p">
+                        Le lecteur réseau <code>S: (Service)</code> est configuré une seule fois dans la GPO, mais avec un ciblage précis : il ne monte que si l'utilisateur appartient au groupe de sécurité correspondant (ex: Compta).
+                    </p>
+                </div>
+
+                <div class="md:w-2/3 win-window h-[350px]">
+                    <div class="win-titlebar">Group Policy Management Editor</div>
+                    <div class="win-content flex justify-center items-center bg-gray-200">
+                        <div class="bg-white border border-gray-400 w-96 p-1 text-xs shadow-xl relative">
+                            <!-- Dialog Header -->
+                            <div class="flex justify-between items-center bg-white px-2 py-1 border-b mb-2">
+                                <span>New Drive Properties</span>
+                                <span class="cursor-pointer">X</span>
+                            </div>
+                            
+                            <!-- Tabs -->
+                            <div class="flex gap-1 pl-2 mb-2">
+                                <span class="border border-b-0 px-2 bg-white z-10 relative top-px border-gray-300">General</span>
+                                <span class="border border-b-0 px-2 bg-gray-100 text-gray-500 border-gray-300">Common</span>
+                            </div>
+                            
+                            <!-- Tab Content -->
+                            <div class="border border-gray-300 p-4 bg-white h-48">
+                                <div class="mb-2">
+                                    <label class="block text-gray-600 mb-1">Action:</label>
+                                    <select class="w-full border border-gray-300 p-1"><option>Update</option></select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-600 mb-1">Location:</label>
+                                    <input type="text" value="\\ecobati.lan\Public\Compta" class="w-full border border-gray-300 p-1">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-600 mb-1">Drive Letter:</label>
+                                    <select class="w-20 border border-gray-300 p-1"><option>S:</option></select>
+                                </div>
+                                <div class="border border-yellow-200 bg-yellow-50 p-2 text-[10px] text-gray-600">
+                                    <strong>Item-Level Targeting applied:</strong><br>
+                                    AND the user is a member of group <span class="font-mono font-bold">ECOBATI\GG_Comptabilite</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end gap-2 mt-2 px-2 pb-2">
+                                <button class="border border-gray-300 px-3 py-1 bg-gray-100 hover:bg-gray-200">OK</button>
+                                <button class="border border-gray-300 px-3 py-1 bg-gray-100 hover:bg-gray-200">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 12. POWERSHELL -->
+        <section id="powershell" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">12.</span> Automatisation PowerShell</h2>
+            <p class="doc-p reveal mb-6">
+                Pour gérer l'arrivée massive de 150 employés, la création manuelle des comptes était impossible. J'ai développé un script PowerShell qui lit un fichier CSV (extrait du logiciel RH) et crée les utilisateurs dans les bonnes OU.
+            </p>
+
+            <div class="cli-window w-full max-w-4xl mx-auto reveal delay-100 shadow-2xl">
+                <div class="cli-header">
+                    <div class="flex gap-1"><div class="w-2 h-2 rounded-full bg-red-500"></div><div class="w-2 h-2 rounded-full bg-yellow-500"></div><div class="w-2 h-2 rounded-full bg-green-500"></div></div>
+                    <span class="ml-2">Administrator: Windows PowerShell ISE</span>
+                </div>
+                <div class="cli-content font-mono text-xs leading-loose">
+                    <span class="text-green-400"># Script d'importation massive des utilisateurs EcoBati</span><br>
+                    <span class="text-blue-300">$CsvFilePath</span> = "C:\Scripts\users_ecobati.csv"<br>
+                    <span class="text-blue-300">$Users</span> = <span class="text-yellow-300">Import-Csv</span> <span class="text-blue-300">$CsvFilePath</span> -Delimiter ";"<br><br>
+                    
+                    <span class="text-purple-400">foreach</span> (<span class="text-blue-300">$User</span> <span class="text-purple-400">in</span> <span class="text-blue-300">$Users</span>) {<br>
+                    &nbsp;&nbsp;<span class="text-green-400"># Détermination de l'OU cible selon la ville (Lyon ou Marseille)</span><br>
+                    &nbsp;&nbsp;<span class="text-blue-300">$TargetOU</span> = "OU=" + <span class="text-blue-300">$User</span>.Ville + ",OU=EcoBati,DC=ecobati,DC=lan"<br>
+                    &nbsp;&nbsp;<span class="text-blue-300">$UPN</span> = <span class="text-blue-300">$User</span>.Login + "@ecobati.lan"<br><br>
+                    
+                    &nbsp;&nbsp;<span class="text-yellow-300">New-ADUser</span> `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-Name <span class="text-blue-300">$User</span>.NomComplet `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-SamAccountName <span class="text-blue-300">$User</span>.Login `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-GivenName <span class="text-blue-300">$User</span>.Prenom `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-Surname <span class="text-blue-300">$User</span>.Nom `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-Path <span class="text-blue-300">$TargetOU</span> `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-UserPrincipalName <span class="text-blue-300">$UPN</span> `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-AccountPassword (<span class="text-yellow-300">ConvertTo-SecureString</span> "EcoBati2025!" -AsPlainText -Force) `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-Enabled <span class="text-blue-300">$true</span> `<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;-ChangePasswordAtLogon <span class="text-blue-300">$true</span><br>
+                    
+                    &nbsp;&nbsp;<span class="text-yellow-300">Write-Host</span> "Utilisateur $($User.Login) créé dans $TargetOU" -ForegroundColor Green<br>
+                    }<br>
+                    <span class="cli-prompt">PS C:\Scripts></span> <span class="animate-pulse">_</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 13. DFS -->
+        <section id="dfs" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-eco_green">13.</span> Système de Fichiers Distribué (DFS)</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 reveal">
+                <div>
+                    <p class="doc-p">
+                        L'utilisation de DFS-N (Namespace) permet de présenter une arborescence logique unique (<code>\\ecobati.lan\Public</code>) indépendante des serveurs physiques.
+                    </p>
+                    <p class="doc-p">
+                        DFS-R (Replication) assure la synchronisation des données entre Lyon et Marseille. Cela garantit que les utilisateurs accèdent toujours aux données locales (rapidité) tout en ayant une sauvegarde sur l'autre site.
+                    </p>
+                </div>
+
+                <!-- FAKE WINDOWS SCREEN: DFS -->
+                <div class="win-window h-[350px]">
+                    <div class="win-titlebar">DFS Management</div>
+                    <div class="win-content">
+                        <div class="win-tree">
+                            <div class="pl-1"><i class="fa-solid fa-share-nodes text-gray-600"></i> DFS Management</div>
+                            <div class="pl-4"><i class="fa-solid fa-folder text-gray-500"></i> Namespaces</div>
+                            <div class="pl-8 font-bold bg-blue-50"><i class="fa-solid fa-globe text-blue-600"></i> \\ecobati.lan\Public</div>
+                            <div class="pl-4"><i class="fa-solid fa-folder text-gray-500"></i> Replication</div>
+                            <div class="pl-8"><i class="fa-solid fa-rotate text-green-600"></i> EcoBati_Data_Rep</div>
+                        </div>
+                        <div class="win-list p-4">
+                            <div class="border border-gray-300 p-4 bg-gray-50 rounded">
+                                <h4 class="font-bold text-sm mb-2 text-gray-700">Namespace Servers</h4>
+                                <table class="w-full text-xs text-left">
+                                    <tr class="border-b border-gray-300"><th class="pb-1">Server</th><th class="pb-1">Site</th><th class="pb-1">Status</th></tr>
+                                    <tr><td class="py-1">SRV-AD-LYON</td><td>Site-Lyon</td><td class="text-green-600 font-bold">Online (Active)</td></tr>
+                                    <tr><td class="py-1">SRV-AD-MRS</td><td>Site-Marseille</td><td class="text-green-600 font-bold">Online</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 14. PRA / FSMO -->
+        <section id="pra" class="py-24 bg-red-900/10 border-t border-red-900/30">
+            <div class="flex justify-between items-end mb-8 reveal">
+                <h2 class="doc-h2 mb-0 border-none"><span class="text-red-500">14.</span> PRA (FSMO Seizing)</h2>
+                <div class="text-red-400 text-sm font-bold bg-red-900/30 px-3 py-1 rounded border border-red-500/50 animate-pulse">SCÉNARIO CRISE</div>
+            </div>
+            
+            <p class="text-slate-300 mb-6 max-w-2xl">
+                Simulation d'une perte totale du site de Lyon. Pour que l'AD continue de fonctionner (création utilisateurs, modification mots de passe), nous devons forcer le transfert des 5 rôles FSMO (Maîtres d'opérations) sur le serveur de Marseille.
+            </p>
+
+            <div class="cli-window w-full max-w-2xl mx-auto reveal delay-100 border border-red-500/30">
+                <div class="cli-header bg-red-900/20">
+                    <span class="ml-2 text-red-200">Administrator: Command Prompt</span>
+                </div>
+                <div class="cli-content font-mono text-xs">
+                    <span class="cli-prompt">C:\></span> ntdsutil<br>
+                    <span class="cli-prompt">ntdsutil:</span> roles<br>
+                    <span class="cli-prompt">fsmo maintenance:</span> connections<br>
+                    <span class="cli-prompt">server connections:</span> connect to server SRV-AD-MRS<br>
+                    <span class="text-gray-500">Binding to SRV-AD-MRS ... Connected using credentials of locally logged on user.</span><br>
+                    <span class="cli-prompt">server connections:</span> quit<br>
+                    <span class="cli-prompt">fsmo maintenance:</span> <span class="text-red-500 font-bold">seize pdc</span><br><br>
+                    <div class="border border-white/20 p-2 mb-2 bg-blue-900 text-white text-center w-64 mx-auto">
+                        <p class="font-bold mb-2">Role Seizure Confirmation</p>
+                        <p class="mb-2">Are you sure you want SRV-AD-MRS to seize the PDC role?</p>
+                        <span class="bg-gray-300 text-black px-2 cursor-pointer hover:bg-white">Yes</span> <span class="bg-gray-600 px-2 cursor-pointer">No</span>
+                    </div>
+                    <span class="text-green-500">Attempting safe transfer of PDC FSMO before seizure...</span><br>
+                    <span class="text-red-500">Rpc call failed with status 1722 (The RPC server is unavailable).</span><br>
+                    <span class="text-green-500">Proceeding with seizure...</span><br>
+                    <span class="text-green-500">PDC FSMO role seized successfully.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 15. SAUVEGARDE (BACKUP) -->
+        <section id="backup" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-red-400">15.</span> Sauvegarde Active Directory</h2>
+            <div class="win-window h-[300px] reveal">
+                <div class="win-titlebar">Windows Server Backup</div>
+                <div class="win-content bg-[#f0f0f0] p-4">
+                    <div class="bg-white border border-gray-400 p-6 shadow-sm">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white text-xl"><i class="fa-solid fa-check"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-800">Last Backup: Successful</h4>
+                                <p class="text-xs text-gray-500">Today at 22:00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-4">
+                            <h5 class="font-bold text-sm text-gray-700 mb-2">Backup Items:</h5>
+                            <ul class="text-xs text-gray-600 space-y-1">
+                                <li class="flex items-center gap-2"><i class="fa-solid fa-hard-drive text-gray-400"></i> Local disk (C:)</li>
+                                <li class="flex items-center gap-2"><i class="fa-solid fa-database text-purple-600"></i> <strong>System State</strong> (Active Directory, Registry, SYSVOL)</li>
+                                <li class="flex items-center gap-2"><i class="fa-solid fa-server text-gray-400"></i> Bare Metal Recovery</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 16. CONCLUSION -->
+        <section id="conclusion" class="py-24">
+            <div class="bg-eco_card border border-slate-700 p-10 rounded-2xl text-center reveal">
+                <div class="inline-block p-4 bg-eco_green/10 rounded-full mb-6">
+                    <i class="fa-solid fa-flag-checkered text-4xl text-eco_green"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-6">Bilan du Projet</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left max-w-4xl mx-auto">
+                    <div class="p-4 border-l-4 border-eco_blue bg-eco_dark rounded shadow">
+                        <h4 class="font-bold text-white mb-1">Centralisation</h4>
+                        <p class="text-xs text-slate-400">100% des utilisateurs sont désormais gérés via l'Active Directory unique. Fin des comptes locaux.</p>
+                    </div>
+                    <div class="p-4 border-l-4 border-eco_orange bg-eco_dark rounded shadow">
+                        <h4 class="font-bold text-white mb-1">Continuité</h4>
+                        <p class="text-xs text-slate-400">L'architecture multi-sites assure que Marseille peut travailler même si le lien VPN vers Lyon est coupé.</p>
+                    </div>
+                    <div class="p-4 border-l-4 border-eco_green bg-eco_dark rounded shadow">
+                        <h4 class="font-bold text-white mb-1">Productivité</h4>
+                        <p class="text-xs text-slate-400">L'accès aux données est transparent (DFS) et l'environnement utilisateur est standardisé (GPO).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Scroll Reveal Logic (Fail-Safe)
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal');
+            // Ajouter la classe hidden uniquement via JS pour éviter le contenu invisible si JS plante
+            revealElements.forEach(el => el.classList.add('reveal-hidden'));
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('reveal-hidden');
+                        // Stop observing once revealed to avoid flickering
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(el => observer.observe(el));
+        });
+
+        // VPN Animation
+        function playVPNAnim() {
+            const packet = document.getElementById('packet');
+            const status = document.getElementById('anim-status');
+            if(!packet) return;
+
+            packet.style.transition = 'none';
+            packet.style.display = 'block';
+            packet.style.top = '50%'; 
+            packet.style.left = '20%'; // Lyon
+            packet.style.backgroundColor = '#3b82f6'; 
+            status.innerText = "Réplication...";
+
+            setTimeout(() => {
+                packet.style.transition = 'all 2s linear';
+                packet.style.left = '50%'; // Tunnel
+                packet.style.backgroundColor = '#10b981';
+                status.innerText = "Tunnel IPsec : Chiffrement ESP...";
+            }, 100);
+
+            setTimeout(() => {
+                packet.style.left = '80%'; // Marseille
+                status.innerText = "Marseille : Données reçues. AD à jour.";
+            }, 2100);
+
+            setTimeout(() => { 
+                packet.style.display = 'none'; 
+                status.innerText = "Synchro terminée.";
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

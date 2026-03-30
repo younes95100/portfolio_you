@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dossier E5 - MediSanté 24/7 | Younes B.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        med_dark: '#0f172a',
+                        med_card: '#1e293b',
+                        med_blue: '#0ea5e9',   /* Bleu Médical */
+                        med_red: '#ef4444',    /* Urgence */
+                        med_green: '#10b981',  /* Stable */
+                        cisco_blue: '#00bceb',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'heartbeat': 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; }
+        
+        /* ANIMATION SECURISEE */
+        .reveal { 
+            opacity: 1; 
+            transform: translateY(0); 
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out; 
+        }
+        .reveal-hidden { 
+            opacity: 0; 
+            transform: translateY(30px); 
+        }
+        
+        /* CLI Window */
+        .cli-window {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #012456;
+            color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        .cli-header {
+            background: #2d2d2d;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .cli-content { padding: 15px; font-size: 0.8rem; line-height: 1.5; min-height: 150px; }
+        
+        /* Styles Documentation */
+        .doc-block { @apply mb-8 p-6 bg-med_card rounded-lg border border-white/5 hover:border-med_blue/30 transition; }
+        .doc-h2 { @apply text-3xl font-bold text-white mb-8 flex items-center gap-3 border-b border-slate-700 pb-4; }
+        .doc-h3 { @apply text-xl font-bold text-med_blue mb-4 mt-2 flex items-center gap-2; }
+        .doc-p { @apply text-slate-400 text-sm leading-relaxed mb-4 text-justify; }
+        .doc-ul { @apply list-disc list-inside text-slate-400 text-sm space-y-2 mb-4 ml-4; }
+        .doc-strong { @apply text-white font-bold; }
+
+        /* HSRP Visuals */
+        .router-box {
+            transition: all 0.3s ease;
+        }
+        .router-active {
+            border-color: #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        .router-standby {
+            border-color: #f59e0b;
+            opacity: 0.7;
+        }
+        .router-failed {
+            border-color: #ef4444;
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        /* Packet Animation */
+        .packet {
+            width: 10px; height: 10px; border-radius: 50%;
+            position: absolute; z-index: 50; display: none;
+            box-shadow: 0 0 10px currentColor;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-80 bg-med_card border-r border-slate-700 flex-col hidden xl:flex z-50">
+        <div class="p-6 border-b border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-med_red rounded flex items-center justify-center text-white font-bold text-xl shadow-lg animate-pulse-slow">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white leading-none">MediSanté 24/7</h1>
+                    <span class="text-xs text-med_blue font-mono">PROJET HSRP E5</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1 text-xs font-medium text-slate-400">
+            <p class="px-3 mb-2 text-[10px] uppercase tracking-widest text-med_blue font-bold">Analyse</p>
+            <a href="#intro" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">1. Accueil</a>
+            <a href="#context" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">2. Contexte Critique</a>
+            <a href="#risks" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">3. Diagnostic Risques</a>
+            <a href="#specs" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition border-l-2 border-med_blue pl-2 bg-white/5">4. Cahier des Charges</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-med_blue font-bold">Conception</p>
+            <a href="#theory" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">5. Théorie HSRP</a>
+            <a href="#topology" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">6. Topologie Redondante</a>
+            <a href="#addressing" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">7. Plan d'Adressage</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-med_blue font-bold">Mise en Œuvre</p>
+            <a href="#config-r1" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">8. Config R1 (Actif)</a>
+            <a href="#config-r2" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">9. Config R2 (Standby)</a>
+            <a href="#advanced" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">10. Sécurité & Tracking</a>
+            
+            <p class="px-3 mb-2 mt-6 text-[10px] uppercase tracking-widest text-med_blue font-bold">Validation</p>
+            <a href="#simulation" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition font-bold text-med_blue"><i class="fa-solid fa-play w-4 mr-2"></i> 11. Simu Failover</a>
+            <a href="#conclusion" class="flex items-center px-3 py-2 rounded hover:bg-white/5 hover:text-white transition">12. Bilan</a>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-700 bg-black/20">
+            <div class="text-xs text-slate-500">Candidat:</div>
+            <div class="text-sm font-bold text-white">Younes Bouizergane</div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto scroll-smooth p-8 lg:p-12 max-w-[1600px] mx-auto">
+        
+        <!-- 1. INTRO -->
+        <section id="intro" class="min-h-[80vh] flex flex-col justify-center items-center text-center border-b border-slate-800">
+            <div class="inline-block p-6 rounded-full bg-med_blue/10 border border-med_blue/30 mb-8 animate-bounce">
+                <i class="fa-solid fa-network-wired text-6xl text-med_blue"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
+                HAUTE DISPONIBILITÉ <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-med_blue to-med_red">HSRP CISCO</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                Architecture résiliente pour "MediSanté 24/7". Garantie de continuité de service pour les appels d'urgence vitale.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mt-8">
+                <div class="bg-med_card p-6 rounded border-t-4 border-med_blue shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">99.999%</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Disponibilité Cible</div>
+                </div>
+                <div class="bg-med_card p-6 rounded border-t-4 border-med_red shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">< 10s</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Temps de Bascule</div>
+                </div>
+                <div class="bg-med_card p-6 rounded border-t-4 border-med_green shadow-lg">
+                    <div class="text-3xl font-bold text-white mb-2">100%</div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Transparence User</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. CONTEXTE -->
+        <section id="context" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">02.</span> Contexte Critique</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="doc-block">
+                    <h3 class="doc-h3"><i class="fa-solid fa-hospital-user"></i> MediSanté 24/7</h3>
+                    <p class="doc-p">
+                        Plateforme de téléassistance médicale basée à Toulouse. <strong>80 opérateurs</strong> répondent aux appels d'urgence (chutes, malaises) de personnes âgées ou isolées.
+                    </p>
+                    <p class="doc-p">
+                        L'activité repose entièrement sur la <strong>VoIP</strong> et l'accès aux <strong>Dossiers Patients</strong> hébergés dans le Cloud. Une coupure Internet signifie l'impossibilité de traiter une urgence vitale.
+                    </p>
+                </div>
+
+                <div class="doc-block bg-med_blue/10 border-med_blue/30">
+                    <h3 class="doc-h3 text-white"><i class="fa-solid fa-server"></i> Infrastructure Actuelle</h3>
+                    <ul class="doc-ul text-slate-300">
+                        <li><strong>Routeur Unique (R1) :</strong> Un seul équipement connecte l'entreprise à Internet.</li>
+                        <li><strong>SPOF :</strong> Single Point of Failure. Si R1 tombe (panne alim, crash OS), toute l'activité s'arrête.</li>
+                        <li><strong>Impact :</strong> Perte estimée à 5000€/h + Risque vital pour les abonnés.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. RISQUES -->
+        <section id="risks" class="py-24 border-b border-slate-800">
+            <div class="bg-gradient-to-r from-med_card to-transparent p-10 rounded-2xl border-l-4 border-med_red">
+                <span class="text-med_red font-bold tracking-widest uppercase text-xs mb-4 block">Problématique</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 leading-relaxed font-serif italic">
+                    "Comment garantir la continuité de service des applications médicales et de la téléphonie, même en cas de panne matérielle majeure de la passerelle Internet, sans aucune intervention humaine ?"
+                </h2>
+            </div>
+        </section>
+
+        <!-- 4. CAHIER DES CHARGES -->
+        <section id="specs" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">04.</span> Cahier des Charges</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="doc-block m-0">
+                    <h3 class="doc-h3"><i class="fa-solid fa-rotate"></i> Redondance</h3>
+                    <p class="doc-p">Ajout d'un routeur secondaire (R2) identique au premier. Mise en place d'un lien de secours.</p>
+                </div>
+                <div class="doc-block m-0">
+                    <h3 class="doc-h3"><i class="fa-solid fa-stopwatch"></i> Performance</h3>
+                    <p class="doc-p">Basculement automatique (Failover) en cas de panne en moins de 10 secondes (Hello Time optimisé).</p>
+                </div>
+                <div class="doc-block m-0">
+                    <h3 class="doc-h3"><i class="fa-solid fa-ghost"></i> Transparence</h3>
+                    <p class="doc-p">Aucune reconfiguration IP sur les 80 postes clients. L'adresse de passerelle doit rester unique (VIP).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. THEORIE HSRP -->
+        <section id="theory" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">05.</span> Théorie HSRP (Cisco)</h2>
+            
+            <div class="flex gap-8 items-center">
+                <div class="w-1/2">
+                    <p class="doc-p">
+                        <strong>HSRP (Hot Standby Router Protocol)</strong> est un protocole propriétaire Cisco de redondance de passerelle (FHRP).
+                    </p>
+                    <h4 class="text-white font-bold mb-2 mt-4">Concepts Clés :</h4>
+                    <ul class="doc-ul">
+                        <li><strong class="doc-strong">Virtual Gateway :</strong> Une IP et une MAC virtuelles partagées entre les routeurs. C'est cette IP que les PC utilisent comme passerelle.</li>
+                        <li><strong class="doc-strong">Active Router :</strong> Celui qui transfère réellement les paquets. (Priorité la plus haute).</li>
+                        <li><strong class="doc-strong">Standby Router :</strong> Celui qui écoute et attend. Il prend le relais si l'Active ne répond plus aux messages "Hello".</li>
+                    </ul>
+                </div>
+                <div class="w-1/2 bg-black/30 p-6 rounded border border-white/10 font-mono text-xs text-slate-300">
+                    <div class="mb-2 text-med_blue font-bold">// États HSRP</div>
+                    <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-slate-600"></span> 1. Init (Démarrage)</div>
+                    <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-yellow-600"></span> 2. Listen (Écoute Hello)</div>
+                    <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span> 3. Speak (Participe à l'élection)</div>
+                    <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> 4. Standby (Prêt à remplacer)</div>
+                    <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> 5. Active (Maître)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. TOPOLOGIE -->
+        <section id="topology" class="py-24 border-b border-slate-800">
+            <div class="flex justify-between items-end mb-8">
+                <h2 class="doc-h2 mb-0 border-none"><span class="text-slate-600">06.</span> Architecture Cible</h2>
+                <div class="text-xs text-slate-500">Schéma Logique HSRP Groupe 1</div>
+            </div>
+
+            <!-- SCHEMA HSRP -->
+            <div class="relative w-full h-[450px] bg-slate-800/50 rounded-xl border border-slate-700 shadow-2xl overflow-hidden" id="hsrp-schema">
+                
+                
+                <!-- INTERNET -->
+                <div class="absolute top-4 left-1/2 -translate-x-1/2 text-center z-10">
+                    <i class="fa-solid fa-cloud text-5xl text-med_blue"></i>
+                    <div class="text-xs font-bold text-white mt-1">WAN / Internet</div>
+                </div>
+
+                <!-- LIAISONS WAN -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                    <line x1="50%" y1="60" x2="30%" y2="150" stroke="#475569" stroke-width="2" />
+                    <line x1="50%" y1="60" x2="70%" y2="150" stroke="#475569" stroke-width="2" />
+                </svg>
+
+                <!-- ROUTEURS -->
+                <div class="absolute top-[150px] w-full flex justify-around px-20">
+                    <!-- R1 -->
+                    <div id="r1-box" class="router-box p-4 bg-med_card border-2 border-med_green rounded-lg flex flex-col items-center w-40 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                        <i class="fa-solid fa-server text-4xl text-white mb-2"></i>
+                        <span class="font-bold text-white">R1 (Master)</span>
+                        <span class="text-[10px] text-slate-400 font-mono">.2 (Prio 150)</span>
+                        <div class="mt-2 px-2 py-1 bg-med_green text-dark font-bold text-[10px] rounded">ACTIVE</div>
+                    </div>
+
+                    <!-- VIP -->
+                    <div class="mt-10">
+                        <div class="bg-blue-600/20 border border-blue-500 text-blue-400 px-4 py-2 rounded-full text-sm font-mono shadow-[0_0_15px_rgba(59,130,246,0.4)] animate-pulse">
+                            VIP: 192.168.10.1
+                        </div>
+                    </div>
+
+                    <!-- R2 -->
+                    <div id="r2-box" class="router-box p-4 bg-med_card border-2 border-yellow-500 rounded-lg flex flex-col items-center w-40 opacity-80">
+                        <i class="fa-solid fa-server text-4xl text-white mb-2"></i>
+                        <span class="font-bold text-white">R2 (Backup)</span>
+                        <span class="text-[10px] text-slate-400 font-mono">.3 (Prio 100)</span>
+                        <div class="mt-2 px-2 py-1 bg-yellow-600 text-white font-bold text-[10px] rounded">STANDBY</div>
+                    </div>
+                </div>
+
+                <!-- HELLO PACKETS -->
+                <div id="hello-packet" class="absolute top-[180px] left-[35%] w-3 h-3 bg-yellow-400 rounded-full z-20"></div>
+
+                <!-- LAN -->
+                <div class="absolute bottom-10 left-1/2 -translate-x-1/2 w-3/4 border-t-4 border-slate-600 pt-4 flex justify-center gap-16">
+                    <div class="text-center">
+                        <i class="fa-solid fa-desktop text-3xl text-white"></i>
+                        <div class="text-xs text-slate-400 mt-1">PC Opérateur</div>
+                        <div class="text-[10px] text-slate-500">GW: .1</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fa-solid fa-phone text-3xl text-white"></i>
+                        <div class="text-xs text-slate-400 mt-1">Tel VoIP</div>
+                        <div class="text-[10px] text-slate-500">GW: .1</div>
+                    </div>
+                </div>
+
+                <!-- Liens LAN -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+                    <line x1="30%" y1="250" x2="50%" y2="350" stroke="#475569" stroke-width="2" />
+                    <line x1="70%" y1="250" x2="50%" y2="350" stroke="#475569" stroke-width="2" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 7. ADRESSAGE -->
+        <section id="addressing" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">07.</span> Plan d'Adressage</h2>
+            <table class="w-full text-sm text-left text-slate-400 border-collapse border border-slate-700">
+                <thead class="text-xs uppercase bg-slate-800 text-white">
+                    <tr>
+                        <th class="px-6 py-3 border border-slate-700">Équipement</th>
+                        <th class="px-6 py-3 border border-slate-700">Rôle HSRP</th>
+                        <th class="px-6 py-3 border border-slate-700">IP Physique</th>
+                        <th class="px-6 py-3 border border-slate-700 bg-blue-900/20">IP Virtuelle (VIP)</th>
+                        <th class="px-6 py-3 border border-slate-700">Priorité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="px-6 py-4 border border-slate-700 font-bold text-white">R1-MAIN</td>
+                        <td class="px-6 py-4 border border-slate-700 text-med_green font-bold">ACTIF</td>
+                        <td class="px-6 py-4 border border-slate-700 font-mono">192.168.10.2</td>
+                        <td class="px-6 py-4 border border-slate-700 font-mono font-bold text-blue-400 bg-blue-900/10" rowspan="2">192.168.10.1</td>
+                        <td class="px-6 py-4 border border-slate-700">150</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 border border-slate-700 font-bold text-white">R2-BACKUP</td>
+                        <td class="px-6 py-4 border border-slate-700 text-yellow-500 font-bold">STANDBY</td>
+                        <td class="px-6 py-4 border border-slate-700 font-mono">192.168.10.3</td>
+                        <td class="px-6 py-4 border border-slate-700">100 (Défaut)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="mt-4 text-xs text-slate-500 italic">
+                * Les clients utilisent exclusivement 192.168.10.1 comme passerelle. Ils ne connaissent pas les IP physiques.
+            </p>
+        </section>
+
+        <!-- 8. CONFIG R1 -->
+        <section id="config-r1" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">08.</span> Configuration R1 (Master)</h2>
+            <div class="flex gap-8 items-start">
+                <div class="w-1/3">
+                    <p class="doc-p">
+                        Configuration de l'interface LAN de R1.
+                        On définit une priorité de <strong>150</strong> (supérieure à 100) pour forcer R1 à être le maître tant qu'il est en vie.
+                    </p>
+                    <p class="doc-p">
+                        <strong>Preempt :</strong> Permet à R1 de reprendre son rôle de maître automatiquement s'il redémarre après une panne.
+                    </p>
+                </div>
+                <div class="w-2/3 cli-window">
+                    <div class="cli-header"><span class="text-green-400">●</span> R1-MAIN (Cisco IOS)</div>
+                    <div class="cli-content font-mono text-xs">
+                        <span class="text-slate-500">! Configuration de l'interface LAN</span><br>
+                        R1(config)# interface gigabitEthernet 0/1<br>
+                        R1(config-if)# ip address 192.168.10.2 255.255.255.0<br>
+                        <br>
+                        <span class="text-slate-500">! Activation du groupe HSRP 1</span><br>
+                        R1(config-if)# standby 1 ip 192.168.10.1<br>
+                        <br>
+                        <span class="text-slate-500">! Priorité Haute (Force R1 Master)</span><br>
+                        R1(config-if)# standby 1 priority 150<br>
+                        <br>
+                        <span class="text-slate-500">! Droit de préemption</span><br>
+                        R1(config-if)# standby 1 preempt<br>
+                        <br>
+                        R1(config-if)# no shutdown<br>
+                        <span class="text-yellow-400">%HSRP-5-STATECHANGE: GigabitEthernet0/1 Grp 1 state Standby -> Active</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. CONFIG R2 -->
+        <section id="config-r2" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">09.</span> Configuration R2 (Standby)</h2>
+            <div class="flex gap-8 items-start">
+                <div class="w-1/3">
+                    <p class="doc-p">
+                        Configuration de R2. On laisse la priorité par défaut (100).
+                        Il écoutera les paquets "Hello" de R1. Si R1 ne répond pas pendant 10 secondes (Hold Time), R2 deviendra Actif.
+                    </p>
+                </div>
+                <div class="w-2/3 cli-window">
+                    <div class="cli-header"><span class="text-yellow-500">●</span> R2-BACKUP (Cisco IOS)</div>
+                    <div class="cli-content font-mono text-xs">
+                        <span class="text-slate-500">! Configuration de l'interface LAN</span><br>
+                        R2(config)# interface gigabitEthernet 0/1<br>
+                        R2(config-if)# ip address 192.168.10.3 255.255.255.0<br>
+                        <br>
+                        <span class="text-slate-500">! Activation HSRP (Même IP Virtuelle)</span><br>
+                        R2(config-if)# standby 1 ip 192.168.10.1<br>
+                        <br>
+                        <span class="text-slate-500">! Priorité par défaut (100) - Pas besoin de commande</span><br>
+                        <span class="text-slate-500">! Préemption pour reprendre la main si R1 meurt</span><br>
+                        R2(config-if)# standby 1 preempt<br>
+                        <br>
+                        R2(config-if)# no shutdown<br>
+                        <span class="text-yellow-400">%HSRP-5-STATECHANGE: GigabitEthernet0/1 Grp 1 state Speak -> Standby</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. SECURITE AVANCEE (TRACKING) -->
+        <section id="advanced" class="py-24 border-b border-slate-800">
+            <h2 class="doc-h2"><span class="text-slate-600">10.</span> Sécurité Avancée : Interface Tracking</h2>
+            <div class="bg-red-900/10 p-6 rounded-xl border border-red-500/30 mb-8">
+                <h3 class="text-red-400 font-bold text-lg mb-2"><i class="fa-solid fa-fire"></i> Le Problème du "Black Hole"</h3>
+                <p class="text-sm text-slate-300">
+                    Si R1 perd sa connexion Internet (WAN coupé) mais que son interface LAN fonctionne toujours, il reste "Actif" HSRP.
+                    Résultat : Il continue de recevoir les paquets des clients et les jette car il n'a plus Internet.
+                </p>
+            </div>
+
+            <div class="doc-block">
+                <h3 class="doc-h3">La Solution : Tracking</h3>
+                <p class="doc-p">
+                    On configure R1 pour surveiller son interface WAN. Si elle tombe, sa priorité HSRP baisse automatiquement de 60 points (150 - 60 = 90).
+                    Comme 90 < 100 (Priorité de R2), R2 prend immédiatement le relais.
+                </p>
+                <div class="cli-window mt-4">
+                    <div class="cli-content font-mono text-xs">
+                        R1(config)# track 1 interface gigabitEthernet 0/0 line-protocol<br>
+                        R1(config)# interface gigabitEthernet 0/1<br>
+                        <span class="text-green-400">R1(config-if)# standby 1 track 1 decrement 60</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. SIMULATION (FAILOVER) -->
+        <section id="simulation" class="py-24 border-b border-slate-800">
+            <div class="flex justify-between items-end mb-8">
+                <h2 class="doc-h2 mb-0 border-none"><span class="text-slate-600">11.</span> Simulation de Panne</h2>
+                <div class="flex gap-4">
+                    <button onclick="toggleR1()" id="btn-r1" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white text-sm font-bold transition shadow-lg">
+                        <i class="fa-solid fa-power-off mr-2"></i> Couper R1
+                    </button>
+                    <button onclick="startPing()" class="px-4 py-2 bg-med_blue hover:bg-blue-600 rounded text-white text-sm font-bold transition shadow-lg">
+                        <i class="fa-solid fa-terminal mr-2"></i> Lancer Ping Client
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-8">
+                <!-- Architecture Visual -->
+                <div class="w-1/2 relative h-64 bg-slate-800/50 rounded-xl border border-slate-700 flex justify-center items-center" id="sim-container">
+                    <!-- R1 -->
+                    <div id="sim-r1" class="absolute top-10 left-10 w-24 p-2 bg-med_card border-2 border-med_green rounded text-center transition-all">
+                        <i class="fa-solid fa-server text-2xl mb-1"></i>
+                        <div class="font-bold text-xs">R1</div>
+                        <div id="status-r1" class="text-[10px] bg-green-600 px-1 rounded">ACTIVE</div>
+                    </div>
+                    <!-- R2 -->
+                    <div id="sim-r2" class="absolute top-10 right-10 w-24 p-2 bg-med_card border-2 border-yellow-500 rounded text-center transition-all opacity-70">
+                        <i class="fa-solid fa-server text-2xl mb-1"></i>
+                        <div class="font-bold text-xs">R2</div>
+                        <div id="status-r2" class="text-[10px] bg-yellow-600 px-1 rounded">STANDBY</div>
+                    </div>
+                    <!-- VIP -->
+                    <div class="absolute top-10 left-1/2 -translate-x-1/2 text-center text-[10px] text-blue-400 font-mono bg-black/50 px-2 rounded border border-blue-500/30">
+                        VIP: .1
+                    </div>
+                    <!-- PC -->
+                    <div class="absolute bottom-5 left-1/2 -translate-x-1/2 text-center">
+                        <i class="fa-solid fa-desktop text-2xl"></i>
+                        <div class="text-xs">Client</div>
+                    </div>
+                    
+                    <!-- Packet Path -->
+                    <div id="sim-packet" class="absolute w-3 h-3 bg-blue-500 rounded-full hidden"></div>
+                </div>
+
+                <!-- Terminal -->
+                <div class="w-1/2 cli-window h-64 overflow-y-auto" id="ping-term">
+                    <div class="cli-content font-mono text-xs" id="ping-content">
+                        <span class="text-slate-500">C:\> ping 8.8.8.8 -t</span><br>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 12. CONCLUSION -->
+        <section id="conclusion" class="py-24">
+            <div class="bg-med_card border border-slate-700 p-10 rounded-2xl text-center reveal">
+                <div class="inline-block p-4 bg-med_green/10 rounded-full mb-6">
+                    <i class="fa-solid fa-check-double text-4xl text-med_green"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-6">Bilan du Projet</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left max-w-4xl mx-auto">
+                    <div class="p-4 border-l-4 border-med_blue bg-med_dark rounded">
+                        <h4 class="font-bold text-white mb-1">Résilience</h4>
+                        <p class="text-xs text-slate-400">Infrastructure tolérante à une panne majeure (Routeur ou Lien).</p>
+                    </div>
+                    <div class="p-4 border-l-4 border-med_red bg-med_dark rounded">
+                        <h4 class="font-bold text-white mb-1">Transparence</h4>
+                        <p class="text-xs text-slate-400">Bascule invisible pour les utilisateurs (VIP inchangée).</p>
+                    </div>
+                    <div class="p-4 border-l-4 border-med_green bg-med_dark rounded">
+                        <h4 class="font-bold text-white mb-1">Sécurité</h4>
+                        <p class="text-xs text-slate-400">Authentification MD5 des échanges HSRP + Tracking WAN.</p>
+                    </div>
+                </div>
+                <p class="mt-10 text-slate-500 text-sm">MediSanté 24/7 garantit désormais une continuité de service critique.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Scroll Reveal
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal');
+            revealElements.forEach(el => el.classList.add('reveal-hidden'));
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('reveal-hidden');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(el => observer.observe(el));
+            
+            // Animation Hello Packets
+            setInterval(() => {
+                if(!r1Down) animateHello();
+            }, 2000);
+        });
+
+        // --- SIMULATION LOGIC ---
+        let r1Down = false;
+        let pingInterval;
+
+        function animateHello() {
+            const packet = document.getElementById('hello-packet');
+            // Animation CSS logic here if needed, simplified for this example
+        }
+
+        function toggleR1() {
+            r1Down = !r1Down;
+            const r1 = document.getElementById('sim-r1');
+            const r2 = document.getElementById('sim-r2');
+            const btn = document.getElementById('btn-r1');
+            const statusR1 = document.getElementById('status-r1');
+            const statusR2 = document.getElementById('status-r2');
+
+            if(r1Down) {
+                // R1 Down
+                r1.classList.add('opacity-20', 'grayscale');
+                r1.classList.remove('border-med_green');
+                r1.classList.add('border-red-500');
+                statusR1.innerText = "DOWN";
+                statusR1.className = "text-[10px] bg-red-600 px-1 rounded";
+                
+                // R2 Takes Over
+                r2.classList.remove('opacity-70', 'border-yellow-500');
+                r2.classList.add('border-med_green', 'scale-110', 'shadow-[0_0_20px_rgba(16,185,129,0.3)]');
+                statusR2.innerText = "ACTIVE";
+                statusR2.className = "text-[10px] bg-green-600 px-1 rounded";
+                
+                btn.innerText = "Rétablir R1";
+                btn.classList.replace('bg-red-600', 'bg-green-600');
+                btn.classList.replace('hover:bg-red-700', 'hover:bg-green-700');
+            } else {
+                // R1 Up (Preempt)
+                r1.classList.remove('opacity-20', 'grayscale', 'border-red-500');
+                r1.classList.add('border-med_green');
+                statusR1.innerText = "ACTIVE";
+                statusR1.className = "text-[10px] bg-green-600 px-1 rounded";
+                
+                // R2 Standby
+                r2.classList.add('opacity-70', 'border-yellow-500');
+                r2.classList.remove('border-med_green', 'scale-110', 'shadow-[0_0_20px_rgba(16,185,129,0.3)]');
+                statusR2.innerText = "STANDBY";
+                statusR2.className = "text-[10px] bg-yellow-600 px-1 rounded";
+                
+                btn.innerText = "Couper R1";
+                btn.classList.replace('bg-green-600', 'bg-red-600');
+                btn.classList.replace('hover:bg-green-700', 'hover:bg-red-700');
+            }
+        }
+
+        function startPing() {
+            const term = document.getElementById('ping-content');
+            if(pingInterval) clearInterval(pingInterval);
+            
+            term.innerHTML = '<span class="text-slate-500">C:\> ping 8.8.8.8 -t</span><br>';
+            
+            pingInterval = setInterval(() => {
+                const p = document.createElement('div');
+                
+                if(r1Down) {
+                    // Slight delay simulation during failover could be added, 
+                    // but HSRP is fast. Let's show success via R2.
+                    p.innerHTML = `Reponse de 8.8.8.8 : octets=32 temps=25ms TTL=114 <span class="text-yellow-500 ml-2">[Via R2]</span>`;
+                } else {
+                    p.innerHTML = `Reponse de 8.8.8.8 : octets=32 temps=22ms TTL=114 <span class="text-med_green ml-2">[Via R1]</span>`;
+                }
+                
+                term.appendChild(p);
+                
+                // Auto scroll
+                const win = document.getElementById('ping-term');
+                win.scrollTop = win.scrollHeight;
+                
+                // Keep only last 10 lines
+                if(term.childElementCount > 10) term.removeChild(term.firstChild);
+                
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

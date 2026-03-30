@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtualisation ESXi - Dossier Complet E5 | Younes B.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vm_blue: '#0091DA',
+                        vm_green: '#60AC39',
+                        dark_bg: '#0a0f16',
+                        card_bg: '#131b26',
+                        accent: '#00d4ff',
+                        tech_purple: '#8b5cf6'
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'grid-move': 'gridMove 30s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'typewriter': 'blink 1s step-end infinite',
+                    },
+                    keyframes: {
+                        gridMove: {
+                            '0%': { backgroundPosition: '0 0' },
+                            '100%': { backgroundPosition: '0 40px' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        scanline: {
+                            '0%': { top: '-10%' },
+                            '100%': { top: '110%' },
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- CUSTOM STYLES --- */
+        body { background-color: #0a0f16; color: #e2e8f0; overflow-x: hidden; }
+        
+        /* Cyber Grid Background */
+        .cyber-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 145, 218, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 145, 218, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            animation: grid-move 30s linear infinite;
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(19, 27, 38, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Scroll Reveal Classes */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal-item.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Packet Animation */
+        .packet {
+            position: absolute;
+            width: 8px; height: 8px;
+            background: #60AC39;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #60AC39;
+            z-index: 10;
+            transition: all 0.1s linear;
+        }
+
+        /* Terminal Style */
+        .terminal-window {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #0c0c0c;
+            color: #cccccc;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        /* Documentation Text Styles */
+        .doc-h3 { @apply text-xl font-bold text-white mb-4 mt-8 flex items-center gap-2 border-b border-white/10 pb-2; }
+        .doc-p { @apply text-slate-400 text-sm leading-relaxed mb-4 text-justify; }
+        .doc-ul { @apply list-disc list-inside text-slate-400 text-sm space-y-2 mb-4 ml-4; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0f16; }
+        ::-webkit-scrollbar-thumb { background: #0091DA; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- BACKGROUND -->
+    <div class="cyber-grid"></div>
+    
+    <!-- PROGRESS BAR -->
+    <div id="progress-bar" class="fixed top-0 left-0 h-1 bg-gradient-to-r from-vm_blue to-vm_green z-[100] w-0 transition-all duration-100"></div>
+
+    <!-- NAVIGATION -->
+    <nav class="fixed w-full z-50 glass border-b border-white/5">
+        <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 bg-vm_blue rounded flex items-center justify-center text-white font-bold text-xl shadow-[0_0_15px_#0091DA] group-hover:animate-pulse">
+                    <i class="fa-brands fa-vmware"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white tracking-wider text-lg leading-none">PROJET E5</h1>
+                    <span class="text-[10px] text-vm_green font-mono tracking-widest">INFRASTRUCTURE</span>
+                </div>
+            </div>
+            <div class="hidden 2xl:flex gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <a href="#intro" class="hover:text-vm_blue transition">Accueil</a>
+                <a href="#context" class="hover:text-vm_blue transition">Contexte</a>
+                <a href="#project" class="hover:text-white transition text-tech_purple">Projet</a>
+                <a href="#architecture" class="hover:text-vm_blue transition">Architecture</a>
+                <a href="#hardware" class="hover:text-vm_blue transition">Matériel</a>
+                <a href="#install" class="hover:text-vm_blue transition">Install</a>
+                <a href="#network" class="hover:text-vm_blue transition">Réseau</a>
+                <a href="#storage" class="hover:text-vm_blue transition">Stockage</a>
+                <a href="#security" class="hover:text-vm_blue transition">Sécurité</a>
+                <a href="#maintenance" class="hover:text-vm_blue transition text-yellow-500">Maintien</a>
+            </div>
+            <div class="text-xs font-mono text-white bg-white/10 px-4 py-2 rounded border border-white/10">
+                Candidat: Younes B.
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. HERO SECTION -->
+    <section id="intro" class="min-h-screen flex items-center justify-center relative pt-20">
+        <!-- Floating Elements -->
+        <div class="absolute top-1/3 left-10 w-64 h-64 bg-vm_blue/10 rounded-full blur-[80px] animate-pulse-slow"></div>
+        <div class="absolute bottom-1/3 right-10 w-64 h-64 bg-vm_green/10 rounded-full blur-[80px] animate-pulse-slow" style="animation-delay: 1s;"></div>
+
+        <div class="text-center z-10 max-w-5xl px-4">
+            <div class="inline-block mb-6 animate-float">
+                <span class="px-4 py-2 rounded-full border border-vm_blue/50 bg-vm_blue/10 text-vm_blue font-mono text-sm">
+                    <i class="fa-solid fa-circle-check mr-2"></i>PROJET VALIDÉ SESSION 2025
+                </span>
+            </div>
+            <h1 class="text-5xl md:text-8xl font-black text-white mb-6 leading-tight tracking-tight reveal-item">
+                VIRTUALISATION <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-vm_blue to-vm_green neon-text">BARE METAL</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-10 max-w-3xl mx-auto font-light reveal-item" style="transition-delay: 100ms;">
+                Migration d'une infrastructure physique obsolète vers un environnement virtualisé haute performance sous <strong>VMware ESXi 7.0</strong>.
+            </p>
+            <div class="flex justify-center gap-6 reveal-item" style="transition-delay: 200ms;">
+                <a href="#problematic" class="px-8 py-4 bg-vm_blue hover:bg-blue-600 text-white font-bold rounded shadow-[0_0_20px_rgba(0,145,218,0.4)] transition-all transform hover:scale-105">
+                    Lire le Dossier
+                </a>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 animate-bounce text-slate-600 text-2xl">
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- 2. CONTEXTE (STORYTELLING) -->
+    <section id="context" class="py-24 relative border-t border-white/5 bg-dark_bg">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex items-center gap-4 mb-16 reveal-item">
+                <span class="text-7xl font-black text-white/5 select-none">01</span>
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Contexte de l'Entreprise</h2>
+                    <p class="text-vm_blue font-mono">TechSolutions SARL</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                <div class="space-y-8 reveal-item">
+                    <div class="glass p-8 rounded-2xl border-l-4 border-vm_blue">
+                        <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-3"><i class="fa-solid fa-building"></i> L'Activité</h3>
+                        <p class="doc-p">
+                            TechSolutions est une PME de 50 collaborateurs spécialisée dans le développement logiciel et l'hébergement d'applications métier. Son activité repose sur la haute disponibilité de ses serveurs de production (Web, BDD, Fichiers) accessibles 24/7 par ses clients et développeurs.
+                        </p>
+                    </div>
+
+                    <div class="glass p-8 rounded-2xl border-l-4 border-red-500">
+                        <h3 class="text-2xl font-bold text-red-400 mb-4 flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation"></i> Le Constat (Legacy)</h3>
+                        <p class="doc-p">
+                            La salle serveur est saturée. L'entreprise utilise un modèle "1 Application = 1 Serveur Physique". L'audit a révélé une sous-utilisation critique des ressources CPU (moyenne 12%) et une consommation électrique excessive.
+                        </p>
+                        <div class="flex gap-4 mt-4">
+                            <div class="bg-red-900/20 px-4 py-2 rounded border border-red-500/30 text-red-400 text-xs font-bold">10 Serveurs Physiques</div>
+                            <div class="bg-red-900/20 px-4 py-2 rounded border border-red-500/30 text-red-400 text-xs font-bold">Pas de HA</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Representation -->
+                <div class="relative reveal-item">
+                    <!-- Old Stack (Red) -->
+                    <div class="absolute top-0 left-0 w-full h-full bg-red-500/5 filter blur-3xl rounded-full"></div>
+                    <div class="relative z-10 grid grid-cols-2 gap-4 opacity-80 hover:opacity-100 transition-opacity duration-500">
+                        <!-- Generated server racks icons -->
+                        <div class="bg-card p-4 rounded border border-red-500/30 flex flex-col items-center animate-pulse">
+                            <i class="fa-solid fa-server text-4xl text-red-500 mb-2"></i>
+                            <span class="text-xs text-red-400">SRV-PHY-01</span>
+                        </div>
+                        <div class="bg-card p-4 rounded border border-red-500/30 flex flex-col items-center animate-pulse" style="animation-delay: 0.2s">
+                            <i class="fa-solid fa-server text-4xl text-red-500 mb-2"></i>
+                            <span class="text-xs text-red-400">SRV-PHY-02</span>
+                        </div>
+                        <div class="bg-card p-4 rounded border border-red-500/30 flex flex-col items-center animate-pulse" style="animation-delay: 0.4s">
+                            <i class="fa-solid fa-server text-4xl text-red-500 mb-2"></i>
+                            <span class="text-xs text-red-400">SRV-PHY-03</span>
+                        </div>
+                        <div class="bg-card p-4 rounded border border-red-500/30 flex flex-col items-center animate-pulse" style="animation-delay: 0.6s">
+                            <i class="fa-solid fa-server text-4xl text-red-500 mb-2"></i>
+                            <span class="text-xs text-red-400">SRV-PHY-04</span>
+                        </div>
+                    </div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 px-6 py-3 rounded border border-red-500 rotate-[-12deg] shadow-2xl">
+                        <span class="text-red-500 font-black text-2xl uppercase border-2 border-red-500 p-2">OBSOLÈTE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. PROBLEMATIQUE & GESTION PROJET -->
+    <section id="project" class="py-24 bg-gradient-to-r from-card to-dark_bg border-y border-white/5 relative">
+        <div class="max-w-5xl mx-auto px-6">
+            
+            <!-- Problematique -->
+            <div class="text-center mb-16 reveal-item">
+                <div class="inline-block mb-4">
+                    <span class="text-accent font-bold tracking-[0.5em] uppercase text-sm">Problématique</span>
+                </div>
+                <h2 class="text-2xl md:text-4xl font-bold text-white leading-tight font-mono h-20 flex items-center justify-center">
+                    "<span id="typewriter-text" class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400"></span><span class="animate-typewriter text-vm_blue">|</span>"
+                </h2>
+            </div>
+
+            <!-- Planning Gantt -->
+            <div class="glass p-8 rounded-2xl reveal-item">
+                <h3 class="doc-h3"><i class="fa-solid fa-calendar-days text-tech_purple"></i> Planning de Migration</h3>
+                <div class="space-y-4 font-mono text-xs">
+                    <div class="flex items-center">
+                        <div class="w-32 text-slate-400">Audit & Sizing</div>
+                        <div class="flex-1 bg-dark_bg h-4 rounded relative">
+                            <div class="absolute left-0 w-[20%] h-full bg-blue-500 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-32 text-slate-400">Installation ESXi</div>
+                        <div class="flex-1 bg-dark_bg h-4 rounded relative">
+                            <div class="absolute left-[20%] w-[10%] h-full bg-green-500 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-32 text-slate-400">Migration P2V</div>
+                        <div class="flex-1 bg-dark_bg h-4 rounded relative">
+                            <div class="absolute left-[30%] w-[40%] h-full bg-yellow-500 rounded"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-32 text-slate-400">Recette & Doc</div>
+                        <div class="flex-1 bg-dark_bg h-4 rounded relative">
+                            <div class="absolute left-[70%] w-[30%] h-full bg-purple-500 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. ARCHITECTURE & MATERIEL -->
+    <section id="hardware" class="py-24 bg-dark_bg relative">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex items-center gap-4 mb-16 reveal-item">
+                <span class="text-7xl font-black text-white/5 select-none">02</span>
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Architecture Matérielle</h2>
+                    <p class="text-vm_green font-mono">Sizing & Pré-requis</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Specs Detail -->
+                <div class="space-y-6 reveal-item">
+                    <div class="doc-p">
+                        Pour consolider 10 serveurs physiques, nous avons dimensionné un serveur hôte unique mais puissant, capable de supporter la charge cumulée avec une marge de 30% pour l'évolution future.
+                    </div>
+                    <div class="glass p-6 rounded-xl border-l-4 border-white hover:bg-white/5 transition">
+                        <h4 class="text-lg font-bold text-white mb-4">Serveur Hôte : DELL PowerEdge R740</h4>
+                        <ul class="space-y-3 text-sm text-slate-400 font-mono">
+                            <li class="flex justify-between border-b border-white/5 pb-2">
+                                <span><i class="fa-solid fa-microchip mr-2 text-blue-400"></i> CPU</span>
+                                <span class="text-white">2x Intel Xeon Gold 6248R (24 Cœurs)</span>
+                            </li>
+                            <li class="flex justify-between border-b border-white/5 pb-2">
+                                <span><i class="fa-solid fa-memory mr-2 text-blue-400"></i> RAM</span>
+                                <span class="text-white">128 Go DDR4 ECC Registered</span>
+                            </li>
+                            <li class="flex justify-between border-b border-white/5 pb-2">
+                                <span><i class="fa-solid fa-hard-drive mr-2 text-blue-400"></i> Stockage</span>
+                                <span class="text-white">4x 2To SSD (RAID 5 Matériel)</span>
+                            </li>
+                            <li class="flex justify-between border-b border-white/5 pb-2">
+                                <span><i class="fa-solid fa-network-wired mr-2 text-blue-400"></i> Réseau</span>
+                                <span class="text-white">4x 10GbE SFP+ (Redondance)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Visual Server -->
+                <div class="relative reveal-item">
+                    <div class="w-full aspect-video bg-black border border-slate-700 rounded-lg relative overflow-hidden shadow-[0_0_50px_rgba(0,145,218,0.2)]">
+                        <!-- Server Face -->
+                        <div class="absolute inset-0 flex flex-col justify-center px-8 gap-4 bg-gradient-to-b from-gray-900 to-black">
+                            <!-- Drive Bays -->
+                            <div class="flex gap-2">
+                                <div class="h-12 flex-1 bg-gray-800 border border-gray-700 rounded relative group"><div class="absolute bottom-2 right-2 w-1 h-1 bg-green-500 rounded-full animate-pulse"></div></div>
+                                <div class="h-12 flex-1 bg-gray-800 border border-gray-700 rounded relative group"><div class="absolute bottom-2 right-2 w-1 h-1 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div></div>
+                                <div class="h-12 flex-1 bg-gray-800 border border-gray-700 rounded relative group"><div class="absolute bottom-2 right-2 w-1 h-1 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.5s"></div></div>
+                                <div class="h-12 flex-1 bg-gray-800 border border-gray-700 rounded relative group"><div class="absolute bottom-2 right-2 w-1 h-1 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.1s"></div></div>
+                            </div>
+                            <!-- Airflow Grills -->
+                            <div class="h-4 w-full bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==')] opacity-50"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. INSTALLATION & CONFIG (BIOS/RAID) -->
+    <section id="install" class="py-24 bg-card border-y border-white/5">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex items-center gap-4 mb-16 reveal-item">
+                <span class="text-7xl font-black text-white/5 select-none">03</span>
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Installation & Configuration</h2>
+                    <p class="text-vm_blue font-mono">De la couche physique à l'OS</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 reveal-item">
+                <!-- Etape 1 -->
+                <div class="glass p-6 rounded-xl border-t-4 border-yellow-500">
+                    <h3 class="font-bold text-white mb-2">1. Préparation BIOS/UEFI</h3>
+                    <ul class="doc-ul">
+                        <li>Activation de <strong>Intel VT-x / VT-d</strong> (Virtualization Technology).</li>
+                        <li>Configuration du mode d'alimentation sur "Performance".</li>
+                        <li>Désactivation des ports série/parallèle inutiles.</li>
+                    </ul>
+                </div>
+                <!-- Etape 2 -->
+                <div class="glass p-6 rounded-xl border-t-4 border-orange-500">
+                    <h3 class="font-bold text-white mb-2">2. Configuration RAID (PERC)</h3>
+                    <ul class="doc-ul">
+                        <li>Accès au contrôleur PERC H730P au démarrage (Ctrl+R).</li>
+                        <li>Création d'un <strong>Virtual Disk (VD)</strong> en RAID 5 avec les 4 SSD.</li>
+                        <li>Initialisation rapide du volume logique.</li>
+                    </ul>
+                </div>
+                <!-- Etape 3 -->
+                <div class="glass p-6 rounded-xl border-t-4 border-blue-500">
+                    <h3 class="font-bold text-white mb-2">3. Installation ESXi</h3>
+                    <ul class="doc-ul">
+                        <li>Boot sur clé USB bootable (Rufus + ISO ESXi 7.0).</li>
+                        <li>Sélection du disque cible (Volume RAID Dell).</li>
+                        <li>Définition du mot de passe Root (complexe).</li>
+                    </ul>
+                </div>
+                <!-- Etape 4 -->
+                <div class="glass p-6 rounded-xl border-t-4 border-green-500">
+                    <h3 class="font-bold text-white mb-2">4. Configuration Post-Install (DCUI)</h3>
+                    <ul class="doc-ul">
+                        <li>Définition IP Statique de Management : <strong>192.168.1.10/24</strong>.</li>
+                        <li>Configuration DNS et Hostname (esxi-01).</li>
+                        <li>Test du réseau de management.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. RESEAU VIRTUEL (vSwitch) -->
+    <section id="network" class="py-24 bg-darker relative">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex items-center gap-4 mb-16 reveal-item">
+                <span class="text-7xl font-black text-white/5 select-none">04</span>
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Réseau Virtuel</h2>
+                    <p class="text-vm_green font-mono">vSwitch & Port Groups</p>
+                </div>
+            </div>
+
+            <!-- Schema Réseau Interactif -->
+            <div class="relative glass p-10 rounded-3xl border border-white/10 overflow-hidden reveal-item" id="network-demo">
+                <div class="absolute top-1/2 left-0 w-full h-px bg-slate-700"></div>
+                
+                <div class="flex justify-between items-center relative z-10">
+                    <!-- VM -->
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-slate-700 rounded-xl border-2 border-purple-500 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                            <i class="fa-solid fa-server text-3xl text-white"></i>
+                        </div>
+                        <p class="mt-4 font-bold text-white">SRV-AD</p>
+                        <p class="text-xs text-purple-400">VLAN 10</p>
+                    </div>
+
+                    <!-- vSwitch Animation -->
+                    <div class="relative w-48 h-48 bg-vm_blue/10 rounded-full border-2 border-vm_blue flex items-center justify-center animate-pulse">
+                        <div class="absolute inset-0 border-4 border-transparent border-t-vm_blue rounded-full animate-spin"></div>
+                        <div class="text-center">
+                            <i class="fa-solid fa-sitemap text-4xl text-vm_blue mb-2"></i>
+                            <p class="font-bold text-white">vSwitch0</p>
+                            <p class="text-[10px] text-slate-400">Standard Switch</p>
+                        </div>
+                    </div>
+
+                    <!-- Physical NIC -->
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-slate-800 rounded-xl border-2 border-green-500 flex items-center justify-center">
+                            <i class="fa-solid fa-network-wired text-3xl text-white"></i>
+                        </div>
+                        <p class="mt-4 font-bold text-white">vmnic0</p>
+                        <p class="text-xs text-green-400">Uplink 10Gb</p>
+                    </div>
+                </div>
+
+                <!-- Animated Packet -->
+                <div id="packet" class="packet" style="top: 50%; left: 10%; transform: translateY(-50%);"></div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <button onclick="animatePacket()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-bold transition">
+                    <i class="fa-solid fa-play mr-2"></i> Lancer Simulation Flux
+                </button>
+            </div>
+
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 reveal-item">
+                <div>
+                    <h3 class="doc-h3">Port Groups</h3>
+                    <p class="doc-p">Ségrégation du trafic par VLANs au niveau du vSwitch.</p>
+                    <ul class="doc-ul">
+                        <li><strong>VM Network (VLAN 10) :</strong> Pour les serveurs de production.</li>
+                        <li><strong>Management Network (VLAN 99) :</strong> Pour l'administration ESXi.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="doc-h3">Politique de Sécurité</h3>
+                    <p class="doc-p">Configuration par défaut du vSwitch pour la sécurité :</p>
+                    <ul class="doc-ul">
+                        <li>Promiscuous Mode : <strong>Reject</strong> (Empêche le sniffing).</li>
+                        <li>MAC Address Changes : <strong>Reject</strong> (Empêche le spoofing).</li>
+                        <li>Forged Transmits : <strong>Reject</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. STOCKAGE (DATASTORES) -->
+    <section id="storage" class="py-24 bg-card border-t border-white/5">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex items-center gap-4 mb-16 reveal-item">
+                <span class="text-7xl font-black text-white/5 select-none">05</span>
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Stockage & Datastores</h2>
+                    <p class="text-vm_blue font-mono">VMFS & ISOs</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 reveal-item">
+                <div class="space-y-6">
+                    <div class="glass p-6 rounded-xl border border-white/5 hover:border-vm_blue transition group">
+                        <h3 class="font-bold text-white mb-2 group-hover:text-vm_blue transition"><i class="fa-solid fa-hard-drive mr-2 text-vm_blue"></i> VMFS 6</h3>
+                        <p class="doc-p">Le volume RAID local a été formaté avec le système de fichiers propriétaire <strong>VMFS 6</strong> (Virtual Machine File System). Il permet le stockage des fichiers de disques virtuels (.vmdk).</p>
+                        <div class="w-full bg-slate-700 rounded-full h-4 mt-4">
+                            <div class="bg-vm_blue h-4 rounded-full text-[10px] text-center text-white leading-4" style="width: 40%">40% Utilisé</div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass p-6 rounded-xl border border-white/5 hover:border-purple-500 transition group">
+                        <h3 class="font-bold text-white mb-2 group-hover:text-purple-500 transition"><i class="fa-solid fa-network-wired mr-2 text-purple-500"></i> iSCSI (Évolution)</h3>
+                        <p class="doc-p">Prévision d'ajout d'un NAS Synology en iSCSI pour le stockage des sauvegardes et des ISOs, afin de ne pas saturer le stockage local rapide.</p>
+                    </div>
+                </div>
+                
+                <!-- Creating VM Form Mockup -->
+                <div class="bg-white text-slate-800 p-6 rounded shadow-xl font-sans text-sm transform rotate-1 hover:rotate-0 transition duration-500">
+                    <div class="font-bold text-lg mb-4 border-b pb-2">Nouvelle machine virtuelle</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="font-bold">Nom</label>
+                            <input type="text" value="SRV-AD-01" class="bg-gray-100 border px-2 py-1 rounded w-48">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <label class="font-bold">Compatibilité</label>
+                            <span class="text-gray-600">ESXi 7.0 et ultérieur</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <label class="font-bold">Famille OS</label>
+                            <span class="text-gray-600">Windows</span>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded border border-blue-200 mt-4">
+                            <div class="flex items-center gap-2 mb-1"><i class="fa-solid fa-microchip text-blue-500"></i> 2 vCPU</div>
+                            <div class="flex items-center gap-2 mb-1"><i class="fa-solid fa-memory text-blue-500"></i> 4096 Mo RAM</div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-hdd text-blue-500"></i> 60 Go (Thin Provisioning)</div>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-2 text-center italic">
+                            *Thin Provisioning : L'espace disque n'est consommé que s'il est réellement écrit par l'OS invité.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. SECURITE (SCANNER EFFECT) -->
+    <section id="security" class="py-24 bg-dark_bg relative overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16 reveal-item">
+                <h2 class="text-4xl font-bold text-white">Hardening & Sécurité</h2>
+                <p class="text-slate-400 mt-2">Verrouillage de l'infrastructure</p>
+            </div>
+
+            <!-- Scanner Container -->
+            <div class="relative grid grid-cols-1 md:grid-cols-3 gap-8 p-8 border border-white/5 rounded-3xl bg-card/50">
+                <!-- Laser Line (CSS Animation) -->
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent z-20 opacity-50 shadow-[0_0_20px_red]" style="animation: scanline 4s linear infinite;"></div>
+
+                <div class="glass p-6 rounded-xl hover:bg-white/5 transition group">
+                    <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-red-500 transition">
+                        <i class="fa-solid fa-lock text-red-500 group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-white font-bold">Lockdown Mode</h3>
+                    <p class="text-sm text-slate-400 mt-2">Désactivation de l'accès direct console (DCUI) pour forcer l'administration via le client Web sécurisé.</p>
+                </div>
+
+                <div class="glass p-6 rounded-xl hover:bg-white/5 transition group">
+                    <div class="w-12 h-12 bg-yellow-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-yellow-500 transition">
+                        <i class="fa-solid fa-shield-halved text-yellow-500 group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-white font-bold">Secure Boot</h3>
+                    <p class="text-sm text-slate-400 mt-2">Utilisation de la puce TPM 2.0 du serveur Dell pour valider la signature cryptographique du noyau ESXi au démarrage.</p>
+                </div>
+
+                <div class="glass p-6 rounded-xl hover:bg-white/5 transition group">
+                    <div class="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 transition">
+                        <i class="fa-solid fa-user-lock text-blue-500 group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-white font-bold">Mots de passe</h3>
+                    <p class="text-sm text-slate-400 mt-2">Politique de complexité renforcée pour le compte root (12 char, spéciaux, chiffres) et rotation mensuelle.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. MAINTENANCE (TERMINAL CLI) -->
+    <section id="maintenance" class="py-24 bg-card border-t border-white/5">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="flex justify-between items-end mb-8 reveal-item">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Maintenance & CLI</h2>
+                    <p class="text-slate-400 text-sm mt-1">Cheat Sheet pour le dépannage SSH</p>
+                </div>
+                <button onclick="runTerminal()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded text-sm font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-terminal"></i> Relancer Demo
+                </button>
+            </div>
+
+            <div class="terminal-window w-full h-[350px] p-6 overflow-hidden relative reveal-item shadow-lg">
+                <div class="absolute top-0 left-0 w-full h-6 bg-[#2d2d2d] flex items-center px-2 gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div id="terminal-content" class="font-mono text-sm leading-relaxed mt-4">
+                    <span class="text-green-500">root@esxi-01:~]</span> <span class="animate-pulse">_</span>
+                </div>
+            </div>
+            
+            <div class="mt-8 grid grid-cols-2 gap-4 text-xs font-mono text-slate-400 reveal-item">
+                <div class="bg-black/30 p-2 rounded border border-white/10">esxcli network nic list : Lister les cartes physiques</div>
+                <div class="bg-black/30 p-2 rounded border border-white/10">esxcli system version get : Version ESXi</div>
+                <div class="bg-black/30 p-2 rounded border border-white/10">vim-cmd vmsvc/getallvms : Lister les VMs</div>
+                <div class="bg-black/30 p-2 rounded border border-white/10">services.sh restart : Redémarrer services management</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. BACKUP & CONCLUSION -->
+    <section id="backup" class="py-24 bg-gradient-to-b from-card to-dark_bg">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center reveal-item">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-6">Stratégie de Sauvegarde</h2>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="bg-white px-3 py-1 rounded">
+                            <span class="font-black text-green-600 text-xl">VEEAM</span>
+                        </div>
+                        <span class="text-xl font-bold text-white">Backup & Replication</span>
+                    </div>
+                    <p class="doc-p">
+                        Mise en place de la règle du <strong>3-2-1</strong> pour garantir l'intégrité des données :<br>
+                        3 copies des données, sur 2 supports différents, dont 1 hors site.
+                    </p>
+                    <ul class="doc-ul">
+                        <li><strong>Snapshots :</strong> Pris avant toute mise à jour critique (Windows Update, install soft).</li>
+                        <li><strong>Backup Quotidien :</strong> Incrémental à 22h00 sur le NAS.</li>
+                        <li><strong>Backup Hebdo :</strong> Full backup le Samedi vers le Cloud (S3).</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white/5 p-8 rounded-2xl border border-vm_green/30 text-center relative overflow-hidden group hover:bg-white/10 transition">
+                    <div class="absolute -right-10 -top-10 text-9xl text-vm_green/10 rotate-12 group-hover:rotate-0 transition duration-500"><i class="fa-solid fa-trophy"></i></div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Bilan du Projet</h3>
+                    <div class="text-left space-y-4 relative z-10">
+                        <div class="flex items-center gap-3 bg-dark_bg p-4 rounded shadow hover:translate-x-2 transition border border-white/5">
+                            <i class="fa-solid fa-check-circle text-vm_green text-2xl"></i>
+                            <span class="text-slate-300">Consolidation Réussie (10 -> 1 Serveur)</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-dark_bg p-4 rounded shadow hover:translate-x-2 transition delay-100 border border-white/5">
+                            <i class="fa-solid fa-bolt text-yellow-500 text-2xl"></i>
+                            <span class="text-slate-300">Économie Énergie (-60%)</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-dark_bg p-4 rounded shadow hover:translate-x-2 transition delay-200 border border-white/5">
+                            <i class="fa-solid fa-shield-halved text-blue-500 text-2xl"></i>
+                            <span class="text-slate-300">Sécurité Renforcée (Hardening)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-dark_bg py-12 border-t border-white/10 text-center">
+        <p class="text-slate-500 text-sm">
+            &copy; 2025 Younes Bouizergane - BTS SIO Option SISR<br>
+            Projet réalisé dans le cadre de l'épreuve E5.
+        </p>
+    </footer>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // 1. TYPEWRITER EFFECT FOR PROBLEMATIC
+        const textToType = "Comment réduire l'empreinte matérielle de 90% tout en augmentant la disponibilité des services critiques ?";
+        const typeWriterElement = document.getElementById('typewriter-text');
+        let i = 0;
+
+        function typeWriter() {
+            if (i < textToType.length) {
+                typeWriterElement.innerHTML += textToType.charAt(i);
+                i++;
+                setTimeout(typeWriter, 40);
+            }
+        }
+
+        // 2. SCROLL REVEAL
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal-item');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        // Trigger typewriter if problematic section is visible
+                        if (entry.target.closest('#project') && i === 0) {
+                            typeWriter();
+                        }
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(el => observer.observe(el));
+            
+            // Start terminal demo automatically once
+            setTimeout(() => {
+               if(window.scrollY > 3000) runTerminal(); 
+            }, 2000);
+        });
+
+        // 3. NETWORK PACKET ANIMATION
+        function animatePacket() {
+            const packet = document.getElementById('packet');
+            // Reset
+            packet.style.transition = 'none';
+            packet.style.left = '10%';
+            
+            // Trigger reflow
+            void packet.offsetWidth;
+
+            // Animate
+            packet.style.transition = 'left 1.5s ease-in-out';
+            packet.style.left = '85%'; // Move to Physical NIC
+        }
+
+        // 4. PROGRESS BAR
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        });
+
+        // 5. TERMINAL ANIMATION
+        const commands = [
+            { cmd: "esxcli system version get", out: "   Product: VMware ESXi\n   Version: 7.0.3\n   Build: Release 19193900" },
+            { cmd: "esxcli network nic list", out: "   Name    PCI Device    Driver  Admin Status  Link Status\n   vmnic0  0000:03:00.0  ntex    Up            Up\n   vmnic1  0000:03:00.1  ntex    Up            Down" },
+            { cmd: "vim-cmd vmsvc/power.on 12", out: "   Powering on VM ID 12..." }
+        ];
+
+        function runTerminal() {
+            const term = document.getElementById('terminal-content');
+            term.innerHTML = ''; // Clear previous runs
+            let cmdIndex = 0;
+
+            function typeCommand() {
+                if(cmdIndex >= commands.length) {
+                    // Final prompt
+                    const finalP = document.createElement('div');
+                    finalP.innerHTML = '<span class="text-green-500">root@esxi-01:~]</span> <span class="animate-pulse">_</span>';
+                    term.appendChild(finalP);
+                    return;
+                }
+                
+                const commandObj = commands[cmdIndex];
+                const pCmd = document.createElement('div');
+                pCmd.innerHTML = `<span class="text-green-500">root@esxi-01:~]</span> `;
+                term.appendChild(pCmd);
+
+                let charI = 0;
+                const typeInterval = setInterval(() => {
+                    pCmd.innerHTML += commandObj.cmd[charI];
+                    charI++;
+                    if(charI >= commandObj.cmd.length) {
+                        clearInterval(typeInterval);
+                        // Show output after delay
+                        setTimeout(() => {
+                            const pOut = document.createElement('pre');
+                            pOut.className = "text-slate-400 mt-1 mb-4";
+                            pOut.innerText = commandObj.out;
+                            term.appendChild(pOut);
+                            term.scrollTop = term.scrollHeight;
+                            cmdIndex++;
+                            setTimeout(typeCommand, 800);
+                        }, 300);
+                    }
+                }, 50);
+            }
+            typeCommand();
+        }
+    </script>
+</body>
+</html>
