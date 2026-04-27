@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Younes Bouizergane | Portfolio SISR</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --accent:  #00ff88;
+            --accent2: #0066ff;
+            --dark:    #050a0e;
+            --dark2:   #0d1520;
+            --mid:     #1a2535;
+            --text:    #e8f0fe;
+            --muted:   #6b7fa3;
+            --border:  rgba(255,255,255,0.08);
+        }
+        html { scroll-behavior: smooth; }
+        body { background: var(--dark); color: var(--text); font-family: 'Syne', sans-serif; overflow-x: hidden; cursor: none; }
+
+        /* ── CURSOR ─────────────────────────────────────── */
+        #cursor      { width:10px;height:10px;background:var(--accent);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%); }
+        #cursor-ring { width:34px;height:34px;border:1px solid rgba(0,255,136,.35);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s; }
+        #scroll-bar  { position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:10000;width:0; }
+
+        /* ── NAV ────────────────────────────────────────── */
+        nav { position:fixed;top:0;width:100%;z-index:1000;padding:1.4rem 4rem;display:flex;justify-content:space-between;align-items:center;transition:all .4s; }
+        nav.solid { background:rgba(5,10,14,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:1rem 4rem; }
+        .nav-logo { font-family:'Space Mono',monospace;font-size:.9rem;color:var(--accent);text-decoration:none;letter-spacing:2px; }
+        .nav-logo span { color:var(--text); }
+        .nav-links { display:flex;gap:1.8rem;list-style:none; }
+        .nav-links a { font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);text-decoration:none;text-transform:uppercase;letter-spacing:1.5px;transition:color .3s;position:relative; }
+        .nav-links a::after { content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s; }
+        .nav-links a:hover { color:var(--accent); }
+        .nav-links a:hover::after { width:100%; }
+        .burger { display:none;flex-direction:column;gap:5px;cursor:pointer; }
+        .burger span { width:24px;height:1.5px;background:var(--text);transition:all .3s; }
+        .mobile-menu { display:none;position:fixed;inset:0;background:rgba(5,10,14,.98);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:2rem; }
+        .mobile-menu.open { display:flex; }
+        .mobile-menu a { font-family:'Space Mono',monospace;font-size:1.1rem;color:var(--text);text-decoration:none;text-transform:uppercase;letter-spacing:3px;transition:color .3s; }
+        .mobile-menu a:hover { color:var(--accent); }
+
+        /* ── HERO ───────────────────────────────────────── */
+        #hero { height:100vh;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:0 6% 10vh; }
+        #hero-bg { position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center/cover; }
+        #hero-overlay { position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,10,14,.97) 0%,rgba(5,10,14,.7) 60%,rgba(0,102,255,.08) 100%); }
+        #canvas-particles { position:absolute;inset:0; }
+        .hero-content { position:relative;z-index:2;max-width:800px; }
+        .hero-tag { font-family:'Space Mono',monospace;font-size:.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:4px;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px; }
+        .hero-tag::before { content:'';width:30px;height:1px;background:var(--accent); }
+        h1.hero-title { font-size:clamp(3rem,7vw,6rem);font-weight:800;line-height:1;margin-bottom:1.5rem; }
+        .hero-title span { color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.25); }
+        .typewriter { font-family:'Space Mono',monospace;font-size:.9rem;color:var(--muted);margin-bottom:3rem;min-height:1.4em; }
+        .typewriter span { border-right:2px solid var(--accent);animation:blink .7s infinite; }
+        @keyframes blink { 50%{border-color:transparent;} }
+        .hero-btns { display:flex;gap:1rem;flex-wrap:wrap; }
+        .btn-primary { padding:.85rem 2rem;background:var(--accent);color:#000;font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;text-decoration:none;transition:all .3s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px)); }
+        .btn-primary:hover { background:#fff;transform:translateY(-2px); }
+        .btn-ghost { padding:.85rem 2rem;background:transparent;color:var(--text);font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;text-decoration:none;border:1px solid rgba(255,255,255,.2);transition:all .3s; }
+        .btn-ghost:hover { border-color:var(--accent);color:var(--accent); }
+        .hero-stats { position:absolute;right:6%;bottom:10vh;z-index:2;display:flex;flex-direction:column;gap:1.5rem; }
+        .stat-item { text-align:right; }
+        .stat-num { font-size:2rem;font-weight:800;color:var(--accent);font-family:'Space Mono',monospace; }
+        .stat-label { font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px; }
+        .scroll-ind { position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px; }
+        .scroll-ind span { font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px; }
+        .scroll-line { width:1px;height:60px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scrollDown 1.5s infinite; }
+        @keyframes scrollDown { 0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;} }
+
+        /* ── SECTIONS ───────────────────────────────────── */
+        .section-inner { max-width:1200px;margin:0 auto;padding:7rem 4rem; }
+        .section-label { font-family:'Space Mono',monospace;font-size:.62rem;color:var(--accent);text-transform:uppercase;letter-spacing:4px;margin-bottom:1rem;display:flex;align-items:center;gap:12px; }
+        .section-label::after { content:'';flex:1;height:1px;background:var(--border);max-width:60px; }
+        .section-title { font-size:clamp(2rem,4vw,3.5rem);font-weight:800;margin-bottom:1rem;line-height:1.05; }
+
+        /* ── ABOUT ──────────────────────────────────────── */
+        #about { background:var(--dark2); }
+        .about-grid { display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;margin-top:4rem; }
+        .about-text p { font-family:'Space Mono',monospace;font-size:.82rem;color:var(--muted);line-height:2;margin-bottom:1.2rem; }
+        .about-text p strong { color:var(--text); }
+        .info-grid { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem; }
+        .info-item { border-left:2px solid var(--accent);padding-left:1rem; }
+        .info-item span:first-child { font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;display:block; }
+        .info-item span:last-child { font-size:.9rem;font-weight:700; }
+        .skills-panel { display:flex;flex-direction:column;gap:1rem; }
+        .skill-row { display:grid;grid-template-columns:130px 1fr 38px;align-items:center;gap:1rem; }
+        .skill-name { font-family:'Space Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted); }
+        .skill-bar { height:3px;background:var(--border);border-radius:2px;overflow:hidden; }
+        .skill-fill { height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width 1.2s ease;border-radius:2px; }
+        .skill-pct { font-family:'Space Mono',monospace;font-size:.65rem;color:var(--accent);text-align:right; }
+
+        /* ── E5 HTML MISSIONS ───────────────────────────── */
+        #missions-e5 { background:var(--dark); }
+        .missions-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1px;margin-top:4rem;border:1px solid var(--border); }
+        .mission-card { background:var(--dark2);padding:2.2rem;position:relative;overflow:hidden;transition:all .4s;text-decoration:none;color:inherit;display:block; }
+        .mission-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transform-origin:left;transition:transform .4s; }
+        .mission-card:hover { background:var(--mid);transform:translateY(-3px); }
+        .mission-card:hover::before { transform:scaleX(1); }
+        .mission-id { font-family:'Space Mono',monospace;font-size:.58rem;color:var(--accent);text-transform:uppercase;letter-spacing:3px;margin-bottom:.9rem; }
+        .mission-card h3 { font-size:1rem;font-weight:700;margin-bottom:.9rem;line-height:1.3;text-transform:uppercase;letter-spacing:.5px; }
+        .mission-card p { font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);line-height:1.8;margin-bottom:1.3rem; }
+        .mission-tags { display:flex;gap:.4rem;flex-wrap:wrap; }
+        .tag { padding:.2rem .65rem;border:1px solid var(--border);font-family:'Space Mono',monospace;font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px; }
+        .mission-arrow { position:absolute;top:2.2rem;right:2.2rem;font-size:1rem;color:var(--border);transition:all .3s; }
+        .mission-card:hover .mission-arrow { color:var(--accent);transform:translate(3px,-3px); }
+
+        /* ── E5 WORD/PDF SECTION ────────────────────────── */
+        #missions-word { background:var(--dark2); }
+        .word-intro { font-family:'Space Mono',monospace;font-size:.8rem;color:var(--muted);line-height:2;max-width:650px;margin-bottom:3rem; }
+        .word-intro strong { color:var(--text); }
+        .word-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem; }
+        .word-card { border:1px solid var(--border);padding:1.8rem;transition:all .3s;position:relative; }
+        .word-card:hover { border-color:rgba(0,255,136,.3);background:var(--mid); }
+        .word-card-top { display:flex;align-items:flex-start;gap:1rem;margin-bottom:1rem; }
+        .word-icon { width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;border:1px solid;margin-top:2px; }
+        .word-icon.blue  { background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.3);color:#60a5fa; }
+        .word-num  { font-family:'Space Mono',monospace;font-size:.56rem;color:var(--accent);text-transform:uppercase;letter-spacing:3px;margin-bottom:.35rem; }
+        .word-card h3 { font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.35rem; }
+        .word-company { font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted);margin-bottom:.8rem; }
+        .word-card p { font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);line-height:1.8;margin-bottom:1.2rem; }
+        .dl-btns { display:flex;gap:.5rem;flex-wrap:wrap; }
+        .dl-btn { display:inline-flex;align-items:center;gap:6px;padding:.38rem .85rem;font-family:'Space Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border:1px solid;transition:all .3s; }
+        .dl-btn.word { border-color:rgba(37,99,235,.4);color:#60a5fa; }
+        .dl-btn.word:hover { background:rgba(37,99,235,.12);border-color:#60a5fa; }
+        .dl-btn.pdf  { border-color:rgba(239,68,68,.4);color:#f87171; }
+        .dl-btn.pdf:hover  { background:rgba(239,68,68,.1);border-color:#f87171; }
+
+        /* ── VEILLE ─────────────────────────────────────── */
+        #veille { background:var(--dark); }
+        .veille-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:5rem;margin-top:4rem;align-items:start; }
+        .veille-text p { font-family:'Space Mono',monospace;font-size:.8rem;color:var(--muted);line-height:2;margin-bottom:1.2rem; }
+        .veille-text p strong { color:var(--text); }
+        .veille-link { display:inline-flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--accent);text-decoration:none;text-transform:uppercase;letter-spacing:2px;margin-top:1rem;border-bottom:1px solid rgba(0,255,136,.3);padding-bottom:2px;transition:border-color .3s; }
+        .veille-link:hover { border-color:var(--accent); }
+        .veille-link::after { content:'→';margin-left:4px;transition:transform .3s; }
+        .veille-link:hover::after { transform:translateX(4px); }
+        .wifi-specs { background:var(--dark2);border:1px solid var(--border);padding:2rem; }
+        .spec-title { font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border); }
+        .spec-item { display:grid;grid-template-columns:1fr auto;align-items:center;padding:.85rem 0;border-bottom:1px solid var(--border); }
+        .spec-item:last-child { border-bottom:none; }
+        .spec-name { font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px; }
+        .spec-sub  { font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted); }
+        .spec-val  { font-family:'Space Mono',monospace;font-size:.7rem;color:var(--accent);text-align:right; }
+        .justify-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem; }
+        .justify-card { background:var(--dark2);border:1px solid var(--border);padding:1.5rem;transition:border-color .3s; }
+        .justify-card:hover { border-color:rgba(0,255,136,.3); }
+        .justify-num { font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:rgba(0,255,136,.08);margin-bottom:.75rem; }
+        .justify-title { font-size:.86rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem; }
+        .justify-text { font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);line-height:1.8; }
+        .news-feed { margin-top:3rem; }
+        .news-label { font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px;padding-bottom:.75rem;border-bottom:1px solid var(--border);margin-bottom:.5rem; }
+        .news-item { padding:1rem 0;border-bottom:1px solid var(--border); }
+        .news-item:last-child { border-bottom:none; }
+        .news-date  { font-family:'Space Mono',monospace;font-size:.58rem;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:.3rem; }
+        .news-title { font-size:.88rem;font-weight:700;margin-bottom:.3rem; }
+        .news-body  { font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);line-height:1.8; }
+
+        /* ── CERTS ──────────────────────────────────────── */
+        #certs { background:var(--dark2); }
+        .certs-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-top:3rem; }
+        .cert-card { border:1px solid var(--border);padding:1.6rem;display:flex;align-items:center;gap:1.2rem;transition:all .3s; }
+        .cert-card:hover { border-color:rgba(0,255,136,.3);background:var(--mid); }
+        .cert-icon { width:42px;height:42px;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.18);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--accent);flex-shrink:0; }
+        .cert-info h4 { font-size:.88rem;font-weight:700;margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.5px; }
+        .cert-info p  { font-family:'Space Mono',monospace;font-size:.63rem;color:var(--muted); }
+
+        /* ── CONTACT ────────────────────────────────────── */
+        #contact { background:var(--dark);overflow:hidden; }
+        .contact-inner { max-width:1200px;margin:0 auto;padding:8rem 4rem;text-align:center;position:relative; }
+        .contact-glow { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,102,255,.06) 0%,transparent 70%);pointer-events:none; }
+        .contact-inner .section-title { font-size:clamp(2.5rem,5vw,5rem);margin-bottom:1rem; }
+        .contact-inner p { font-family:'Space Mono',monospace;font-size:.82rem;color:var(--muted);max-width:500px;margin:0 auto 3rem;line-height:2; }
+        .contact-btns { display:flex;justify-content:center;gap:1rem;flex-wrap:wrap; }
+
+        footer { background:var(--dark);border-top:1px solid var(--border);padding:2rem 4rem;display:flex;justify-content:space-between;align-items:center; }
+        footer span { font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:3px; }
+        .footer-dot { width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:.3;} }
+
+        .reveal { opacity:0;transform:translateY(25px);transition:all .7s cubic-bezier(.16,1,.3,1); }
+        .reveal.active { opacity:1;transform:translateY(0); }
+        .reveal-d1 { transition-delay:.1s; }
+        .reveal-d2 { transition-delay:.2s; }
+        .reveal-d3 { transition-delay:.3s; }
+
+        @media (max-width:900px) {
+            nav { padding:1.5rem 2rem; }
+            nav.solid { padding:1rem 2rem; }
+            .nav-links { display:none; }
+            .burger { display:flex; }
+            .section-inner { padding:5rem 2rem; }
+            .about-grid,.veille-layout { grid-template-columns:1fr;gap:3rem; }
+            .hero-stats { display:none; }
+            .justify-grid { grid-template-columns:1fr; }
+            footer { flex-direction:column;gap:1rem;text-align:center; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="scroll-bar"></div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+    <a href="#about"        onclick="closeMobile()">À Propos</a>
+    <a href="#missions-e5"  onclick="closeMobile()">Missions E5 — HTML</a>
+    <a href="#missions-word"onclick="closeMobile()">Missions E5 — Word / PDF</a>
+    <a href="#veille"       onclick="closeMobile()">Veille Wi-Fi 7</a>
+    <a href="#certs"        onclick="closeMobile()">Certifications</a>
+    <a href="#contact"      onclick="closeMobile()">Contact</a>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+    <a href="#hero" class="nav-logo">YB<span>.SISR</span></a>
+    <ul class="nav-links">
+        <li><a href="#about">À Propos</a></li>
+        <li><a href="#missions-e5">E5 — HTML</a></li>
+        <li><a href="#missions-word">E5 — Word / PDF</a></li>
+        <li><a href="#veille">Veille Wi-Fi 7</a></li>
+        <li><a href="#certs">Certifications</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="burger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section id="hero">
+    <div id="hero-bg"></div>
+    <div id="hero-overlay"></div>
+    <canvas id="canvas-particles"></canvas>
+    <div class="hero-content">
+        <div class="hero-tag">BTS SIO — Option SISR — Session 2026</div>
+        <h1 class="hero-title">Younes<br><span>Bouizergane</span></h1>
+        <div class="typewriter" id="typewriter"><span></span></div>
+        <div class="hero-btns">
+            <a href="#missions-e5"   class="btn-primary">Explorer les projets</a>
+            <a href="#missions-word" class="btn-ghost">Télécharger les dossiers</a>
+        </div>
+    </div>
+    <div class="hero-stats">
+        <div class="stat-item"><div class="stat-num" data-target="6">0</div><div class="stat-label">Missions E5</div></div>
+        <div class="stat-item"><div class="stat-num">99.999<span style="font-size:1rem">%</span></div><div class="stat-label">Uptime HSRP</div></div>
+        <div class="stat-item"><div class="stat-num" data-target="2">0</div><div class="stat-label">Certifications</div></div>
+    </div>
+    <div class="scroll-ind"><div class="scroll-line"></div><span>Défiler</span></div>
+</section>
+
+<!-- ══════════ ABOUT ══════════ -->
+<section id="about">
+    <div class="section-inner">
+        <div class="section-label reveal">001 — À Propos</div>
+        <h2 class="section-title reveal">Architecte<br>d'infrastructures.</h2>
+        <div class="about-grid">
+            <div class="about-text reveal">
+                <p>Passionné par l'architecture des systèmes et la <strong>cybersécurité</strong>, je suis étudiant en BTS SIO spécialité SISR. Je me spécialise dans le <strong>déploiement de serveurs</strong>, la sécurisation des flux réseaux et l'automatisation des infrastructures.</p>
+                <p>Mon portfolio présente <strong>6 missions E5</strong> documentées en version HTML interactive et en version formelle Word / PDF — conformément aux exigences de l'épreuve BTS SIO SISR Session 2026.</p>
+                <div class="info-grid" style="margin-top:2.5rem">
+                    <div class="info-item"><span>Localisation</span><span>Paris, France</span></div>
+                    <div class="info-item"><span>Spécialité</span><span>Systèmes & Réseaux</span></div>
+                    <div class="info-item"><span>Niveau</span><span>BTS SIO SISR</span></div>
+                    <div class="info-item"><span>Disponibilité</span><span>Alternance 2026</span></div>
+                </div>
+            </div>
+            <div class="skills-panel reveal reveal-d2">
+                <div class="skill-row"><div class="skill-name">Cisco / HSRP</div><div class="skill-bar"><div class="skill-fill" data-pct="88"></div></div><div class="skill-pct">88%</div></div>
+                <div class="skill-row"><div class="skill-name">pfSense / DMZ</div><div class="skill-bar"><div class="skill-fill" data-pct="85"></div></div><div class="skill-pct">85%</div></div>
+                <div class="skill-row"><div class="skill-name">Active Directory</div><div class="skill-bar"><div class="skill-fill" data-pct="83"></div></div><div class="skill-pct">83%</div></div>
+                <div class="skill-row"><div class="skill-name">VMware ESXi</div><div class="skill-bar"><div class="skill-fill" data-pct="78"></div></div><div class="skill-pct">78%</div></div>
+                <div class="skill-row"><div class="skill-name">OpenVPN / PKI</div><div class="skill-bar"><div class="skill-fill" data-pct="80"></div></div><div class="skill-pct">80%</div></div>
+                <div class="skill-row"><div class="skill-name">VLANs / OSPF</div><div class="skill-bar"><div class="skill-fill" data-pct="87"></div></div><div class="skill-pct">87%</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ E5 — FORMAT HTML ══════════ -->
+<section id="missions-e5">
+    <div class="section-inner">
+        <div class="section-label reveal">002 — Épreuves E5</div>
+        <h2 class="section-title reveal">Missions E5<br><span style="color:var(--accent)">Format HTML interactif</span></h2>
+        <p class="reveal" style="font-family:'Space Mono',monospace;font-size:.8rem;color:var(--muted);max-width:620px;line-height:2;margin-bottom:3rem;">
+            Dossiers techniques interactifs avec schémas animés, simulations CLI, topologies réseau dynamiques et tableaux de validation. Cliquer sur une carte pour accéder au dossier complet.
+        </p>
+
+        <div class="missions-grid">
+
+            <!-- E5-01 -->
+            <a href="HRSP.html" class="mission-card reveal">
+                <div class="mission-id">E5-01 · MediSanté 24/7 · Toulouse</div>
+                <h3>Haute Disponibilité HSRP</h3>
+                <p>Architecture Cisco 2911 redondante garantissant 99,999 % de disponibilité pour un service d'urgence médicale VoIP. Failover en moins d'une seconde.</p>
+                <div class="mission-tags">
+                    <span class="tag">Cisco IOS</span><span class="tag">HSRP v2</span>
+                    <span class="tag">VoIP SIP</span><span class="tag">SNMP</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right mission-arrow"></i>
+            </a>
+
+            <!-- E5-02 -->
+            <a href="DMZ.html" class="mission-card reveal reveal-d1">
+                <div class="mission-id">E5-02 · Green-Tech Solutions</div>
+                <h3>Sécurisation DMZ pfSense</h3>
+                <p>Zone démilitarisée isolant les serveurs web du LAN interne. Surface d'attaque réduite de 90 %. IDS Snort + Proxy Squid opérationnels.</p>
+                <div class="mission-tags">
+                    <span class="tag">pfSense</span><span class="tag">DMZ</span>
+                    <span class="tag">Snort IDS</span><span class="tag">Squid</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right mission-arrow"></i>
+            </a>
+
+            <!-- E5-03 -->
+            <a href="architecture_IAM.html" class="mission-card reveal reveal-d2">
+                <div class="mission-id">E5-03 · EcoBati Sud · 2 sites</div>
+                <h3>Architecture IAM Multi-Sites</h3>
+                <p>Active Directory Windows Server 2022. 120 comptes centralisés sur Marseille + Montpellier. GPO de sécurité uniformes — migration en 48 heures.</p>
+                <div class="mission-tags">
+                    <span class="tag">Active Directory</span><span class="tag">GPO</span>
+                    <span class="tag">PowerShell</span><span class="tag">DNS/DHCP</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right mission-arrow"></i>
+            </a>
+
+            <!-- E5-04 -->
+            <a href="virtualistaion.html" class="mission-card reveal">
+                <div class="mission-id">E5-04 · TechSolutions SARL</div>
+                <h3>Hyperviseur Bare Metal ESXi</h3>
+                <p>Consolidation de 8 serveurs physiques vers VMware ESXi 7.0. Économie de 11 520 €/an. Déploiement VM en 15 minutes. Veeam Backup intégré.</p>
+                <div class="mission-tags">
+                    <span class="tag">VMware ESXi</span><span class="tag">vSphere</span>
+                    <span class="tag">Veeam B&R</span><span class="tag">vMotion</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right mission-arrow"></i>
+            </a>
+
+            <!-- E5-05 -->
+            <a href="dossier_vpn.html" class="mission-card reveal reveal-d1">
+                <div class="mission-id">E5-05 · TechSolutions Consulting</div>
+                <h3>Accès Distants VPN SSL</h3>
+                <p>OpenVPN AES-256-GCM + PKI X.509 pour 30 consultants nomades. 0 port RDP exposé. 5 847 attaques éliminées. Économie 2 400 €/an vs TeamViewer.</p>
+                <div class="mission-tags">
+                    <span class="tag">OpenVPN</span><span class="tag">PKI X.509</span>
+                    <span class="tag">AES-256-GCM</span><span class="tag">TLS 1.3</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right mission-arrow"></i>
+            </a>
+
+            <!-- E5-06 -->
+            <a href="reseau_local.html" class="mission-card reveal reveal-d2">
+                <div class="mission-id">E5-06 · MédiaCom Horizon · Bordeaux</div>
+                <h3>Segmentation VLAN & DHCP/OSPF</h3>
+                <p>Réseau plat refactorisé en 6 VLANs 802.1Q. Routage inter-VLAN ROAS. ACL étendues. DHCP par VLAN. OSPF. Broadcast storms éliminés — latence −42 %.</p>
+                <div class="mission-tags">
+                    <span class="tag">802.1Q</span><span class="tag">ROAS</span>
+                    <span class="tag">OSPF</span><span class="tag">ACL</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right mission-arrow"></i>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ E5 — FORMAT WORD / PDF ══════════ -->
+<section id="missions-word">
+    <div class="section-inner">
+        <div class="section-label reveal">003 — Épreuves E5</div>
+        <h2 class="section-title reveal">Missions E5<br><span style="color:#60a5fa">Format Word &amp; PDF</span></h2>
+        <p class="word-intro reveal">
+            Documents formels produits pour l'<strong>épreuve E5 BTS SIO SISR — Session 2026</strong>. Chaque dossier suit la structure du référentiel : page de garde, table des matières, contexte, topologie réseau, configurations CLI complètes, captures d'écran simulées, tests de validation et bilan de compétences. Disponibles en <strong>.docx</strong> (Word) et <strong>.pdf</strong>.
+        </p>
+
+        <div class="word-grid">
+
+            <!-- E5-01 WORD -->
+            <div class="word-card reveal">
+                <div class="word-card-top">
+                    <div class="word-icon blue"><i class="fa-solid fa-network-wired"></i></div>
+                    <div>
+                        <div class="word-num">E5-01 · MediSanté 24/7</div>
+                        <h3>Haute Disponibilité HSRP</h3>
+                        <div class="word-company">Cisco 2911 · HSRP v2 · VoIP SIP · SNMP</div>
+                    </div>
+                </div>
+                <p>Page de garde, topologie Packet Tracer, configurations R1/R2 complètes (CLI noir), show standby, logs Syslog bascule, tableau de recette 10 tests, bilan SLA 99,999 %.</p>
+                <div class="dl-btns">
+                    <a href="E5-01_HSRP_MediSante.docx" download class="dl-btn word"><i class="fa-solid fa-download"></i> .docx</a>
+                    <a href="E5-01_HSRP_MediSante.pdf"  target="_blank" class="dl-btn pdf"><i class="fa-solid fa-file-pdf"></i> .pdf</a>
+                </div>
+            </div>
+
+            <!-- E5-02 WORD -->
+            <div class="word-card reveal reveal-d1">
+                <div class="word-card-top">
+                    <div class="word-icon blue"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div>
+                        <div class="word-num">E5-02 · Green-Tech Solutions</div>
+                        <h3>Sécurisation DMZ pfSense</h3>
+                        <div class="word-company">pfSense 2.7.2 · DMZ · Snort IDS · Squid</div>
+                    </div>
+                </div>
+                <p>Scan Nmap initial (failles), topologie trizone WAN/LAN/DMZ, NAT Port Forwarding, règles de filtrage, logs Squid et alertes Snort, isolation DMZ→LAN validée.</p>
+                <div class="dl-btns">
+                    <a href="E5-02_DMZ_GreenTech.docx" download class="dl-btn word"><i class="fa-solid fa-download"></i> .docx</a>
+                    <a href="E5-02_DMZ_GreenTech.pdf"  target="_blank" class="dl-btn pdf"><i class="fa-solid fa-file-pdf"></i> .pdf</a>
+                </div>
+            </div>
+
+            <!-- E5-03 WORD -->
+            <div class="word-card reveal reveal-d2">
+                <div class="word-card-top">
+                    <div class="word-icon blue"><i class="fa-brands fa-microsoft"></i></div>
+                    <div>
+                        <div class="word-num">E5-03 · EcoBati Sud</div>
+                        <h3>Architecture IAM Multi-Sites</h3>
+                        <div class="word-company">Windows Server 2022 · AD DS · GPO · PowerShell</div>
+                    </div>
+                </div>
+                <p>PowerShell Install-ADDSForest, structure OU arborescente, création 120 users depuis CSV, GPO déployées, gpresult /R, nltest, réplication inter-sites, 10 tests de validation.</p>
+                <div class="dl-btns">
+                    <a href="E5-03_IAM_EcoBatiSud.docx" download class="dl-btn word"><i class="fa-solid fa-download"></i> .docx</a>
+                    <a href="E5-03_IAM_EcoBatiSud.pdf"  target="_blank" class="dl-btn pdf"><i class="fa-solid fa-file-pdf"></i> .pdf</a>
+                </div>
+            </div>
+
+            <!-- E5-04 WORD -->
+            <div class="word-card reveal">
+                <div class="word-card-top">
+                    <div class="word-icon blue"><i class="fa-solid fa-server"></i></div>
+                    <div>
+                        <div class="word-num">E5-04 · TechSolutions SARL</div>
+                        <h3>Hyperviseur Bare Metal ESXi</h3>
+                        <div class="word-company">VMware ESXi 7.0 · vSphere · Veeam B&R 12</div>
+                    </div>
+                </div>
+                <p>Inventaire 8 serveurs physiques, installation DCUI ESXi, interface vSphere simulée (8 VMs Running), snapshots PowerCLI, résultats consolidation −75 % serveurs, −80 % conso électrique.</p>
+                <div class="dl-btns">
+                    <a href="E5-04_ESXi_Virtualisation.docx" download class="dl-btn word"><i class="fa-solid fa-download"></i> .docx</a>
+                    <a href="E5-04_ESXi_Virtualisation.pdf"  target="_blank" class="dl-btn pdf"><i class="fa-solid fa-file-pdf"></i> .pdf</a>
+                </div>
+            </div>
+
+            <!-- E5-05 WORD -->
+            <div class="word-card reveal reveal-d1">
+                <div class="word-card-top">
+                    <div class="word-icon blue"><i class="fa-solid fa-lock"></i></div>
+                    <div>
+                        <div class="word-num">E5-05 · TechSolutions Consulting</div>
+                        <h3>Accès Distants VPN SSL</h3>
+                        <div class="word-company">OpenVPN · PKI X.509 · AES-256-GCM · TLS 1.3</div>
+                    </div>
+                </div>
+                <p>Analyse logs RDP (5 847 attaques), schéma PKI hiérarchique, config pfSense GUI OpenVPN, logs connexion client jean.dupont, test CRL révocation, tableau avant/après sécurité.</p>
+                <div class="dl-btns">
+                    <a href="E5-05_VPN_TechSolutions.docx" download class="dl-btn word"><i class="fa-solid fa-download"></i> .docx</a>
+                    <a href="E5-05_VPN_TechSolutions.pdf"  target="_blank" class="dl-btn pdf"><i class="fa-solid fa-file-pdf"></i> .pdf</a>
+                </div>
+            </div>
+
+            <!-- E5-06 WORD -->
+            <div class="word-card reveal reveal-d2">
+                <div class="word-card-top">
+                    <div class="word-icon blue"><i class="fa-solid fa-diagram-project"></i></div>
+                    <div>
+                        <div class="word-num">E5-06 · MédiaCom Horizon</div>
+                        <h3>Segmentation VLAN &amp; DHCP/OSPF</h3>
+                        <div class="word-company">Cisco 2960 · 802.1Q · ROAS · ACL · OSPF</div>
+                    </div>
+                </div>
+                <p>Plan 6 VLANs, config CLI SW1 (création VLANs + trunk), ROAS Cisco 1841 (6 sous-interfaces), ACL isolation coworking, show vlan brief + show interfaces trunk, Wireshark avant/après.</p>
+                <div class="dl-btns">
+                    <a href="E5-06_VLAN_MediaCom.docx" download class="dl-btn word"><i class="fa-solid fa-download"></i> .docx</a>
+                    <a href="E5-06_VLAN_MediaCom.pdf"  target="_blank" class="dl-btn pdf"><i class="fa-solid fa-file-pdf"></i> .pdf</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ VEILLE WIFI 7 ══════════ -->
+<section id="veille">
+    <div class="section-inner">
+        <div class="section-label reveal">004 — Veille Technologique</div>
+        <h2 class="section-title reveal">Wi-Fi 7<br><span style="color:var(--accent)">IEEE 802.11be</span></h2>
+
+        <div class="veille-layout">
+            <div>
+                <div class="veille-text reveal">
+                    <p>Le <strong>Wi-Fi 7 (IEEE 802.11be)</strong> représente une rupture technologique majeure dans les communications sans fil. L'introduction du <strong>Multi-Link Operation (MLO)</strong> permet pour la première fois de transmettre simultanément sur les 3 bandes (2,4 GHz / 5 GHz / 6 GHz), transformant fondamentalement l'architecture réseau en entreprise.</p>
+                    <p>Ma veille porte sur les <strong>impacts concrets pour les administrateurs réseau SISR</strong> : refonte des plans de couverture RF, migration Wi-Fi 6E → 7, nouvelles contraintes PoE++ (90 W), câblage Cat 6a/7 obligatoire, et chiffrement WPA3/GCMP-256 résistant aux menaces quantiques.</p>
+                    <p>Des études terrain en Île-de-France (Apo'g, T1 2025) indiquent un <strong>ROI moyen de 18 mois</strong> pour une PME. Le Wi-Fi 7 n'est plus une promesse : 17 % des bornes professionnelles sont déjà Wi-Fi 7 en 2025 (IDC), avec une projection de 50 % d'ici 2027.</p>
+                    <a href="wifi77.html" class="veille-link">Accéder au dossier de veille complet</a>
+                </div>
+
+                <div class="news-feed reveal reveal-d1">
+                    <div class="news-label">Fil d'actualité — Avril 2026</div>
+                    <div class="news-item">
+                        <div class="news-date">Semaine du 14 Avril 2026</div>
+                        <div class="news-title">Cisco State of Wireless 2026 — L'IA précipite la migration Wi-Fi 7</div>
+                        <div class="news-body">Rapport mondial auprès de 6 000 professionnels réseau : les entreprises sur bande 6 GHz affichent 45 % d'usage IA contre 26 % pour les non-adoptants. +60 % de clients 6 GHz mis en service en 2025.</div>
+                    </div>
+                    <div class="news-item">
+                        <div class="news-date">Semaine du 07 Avril 2026</div>
+                        <div class="news-title">Netgear — Les 7 erreurs coûteuses lors d'un déploiement Wi-Fi 7</div>
+                        <div class="news-body">Pièges terrain identifiés : absence d'étude de site RF, sous-estimation du PoE++ (90 W requis), câblage insuffisant (Cat 6a/7 minimum), portée limitée de la bande 6 GHz en milieu dense.</div>
+                    </div>
+                    <div class="news-item">
+                        <div class="news-date">Semaine du 31 Mars 2026</div>
+                        <div class="news-title">Wifirst — Wi-Fi 7 s'impose comme standard haute performance en 2026</div>
+                        <div class="news-body">Débits réels mesurés en environnement bureautique : 1 à 5 Gbps. Prérequis infrastructure : fibre FTTO ou XGS-PON 10 Gbps pour éviter le goulot d'étranglement en amont.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="wifi-specs reveal reveal-d2">
+                    <div class="spec-title">Fiche technique — IEEE 802.11be (Wi-Fi 7)</div>
+                    <div class="spec-item"><div><div class="spec-name">Alias</div><div class="spec-sub">Nom commercial</div></div><div class="spec-val">Wi-Fi 7 / EHT</div></div>
+                    <div class="spec-item"><div><div class="spec-name">MLO</div><div class="spec-sub">Multi-Link Operation</div></div><div class="spec-val">2,4 / 5 / 6 GHz</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Canaux</div><div class="spec-sub">Bande passante max</div></div><div class="spec-val">320 MHz</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Modulation</div><div class="spec-sub">Efficacité spectrale +20 %</div></div><div class="spec-val">4096-QAM</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Débit théorique</div><div class="spec-sub">Peak throughput</div></div><div class="spec-val">46 Gbps</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Débit réel pro</div><div class="spec-sub">Env. bureautique mesuré</div></div><div class="spec-val">1 – 5 Gbps</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Latence cible</div><div class="spec-sub">Avec MLO activé</div></div><div class="spec-val">&lt; 1 ms</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Sécurité</div><div class="spec-sub">Résistance quantique</div></div><div class="spec-val">WPA3 / GCMP-256</div></div>
+                    <div class="spec-item"><div><div class="spec-name">PoE requis</div><div class="spec-sub">Alimentation bornes</div></div><div class="spec-val">PoE++ 90 W</div></div>
+                    <div class="spec-item"><div><div class="spec-name">Certification Wi-Fi Alliance</div><div class="spec-sub">Disponibilité officielle</div></div><div class="spec-val">Janv. 2024</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Justifications -->
+        <div style="margin-top:5rem;">
+            <div class="section-label reveal">Pourquoi ce sujet de veille ?</div>
+            <div class="justify-grid">
+                <div class="justify-card reveal"><div class="justify-num">01</div><div class="justify-title">Rupture de paradigme</div><div class="justify-text">Le MLO permet de transmettre sur 3 bandes simultanément — impossible avant 2024. Ce n'est pas une évolution incrémentale, c'est une refonte de l'architecture RF.</div></div>
+                <div class="justify-card reveal reveal-d1"><div class="justify-num">02</div><div class="justify-title">Cœur du métier SISR</div><div class="justify-text">Concevoir des infras réseau d'entreprise implique de comprendre latence, bande passante, sécurité WPA3 pour dimensionner correctement un déploiement Wi-Fi 7.</div></div>
+                <div class="justify-card reveal reveal-d2"><div class="justify-num">03</div><div class="justify-title">Déjà opérationnel</div><div class="justify-text">17 % des bornes pro sont Wi-Fi 7 en 2025. 50 % projeté en 2027 (IDC). La veille porte sur du concret et du vérifiable — pas de la prospective.</div></div>
+                <div class="justify-card reveal"><div class="justify-num">04</div><div class="justify-title">Moteur de l'IA</div><div class="justify-text">Les entreprises sur bande 6 GHz affichent un taux d'usage IA deux fois supérieur (Cisco 2026). Wi-Fi 7 est l'infrastructure sans fil de l'ère IA.</div></div>
+                <div class="justify-card reveal reveal-d1"><div class="justify-num">05</div><div class="justify-title">Sécurité renforcée</div><div class="justify-text">WPA3 obligatoire + GCMP-256. Résistance aux menaces quantiques. Atout différenciant pour un futur administrateur réseau sur le marché de l'emploi.</div></div>
+                <div class="justify-card reveal reveal-d2"><div class="justify-num">06</div><div class="justify-title">ROI démontré</div><div class="justify-text">Retour sur investissement moyen de 18 mois en PME Île-de-France (Apo'g, T1 2025). La technologie a prouvé sa valeur économique avec des données terrain mesurées.</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ CERTIFICATIONS ══════════ -->
+<section id="certs">
+    <div class="section-inner">
+        <div class="section-label reveal">005 — Certifications</div>
+        <h2 class="section-title reveal">Accréditations.</h2>
+        <div class="certs-grid">
+            <div class="cert-card reveal"><div class="cert-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="cert-info"><h4>ANSSI — EBIOS RM</h4><p>Certification Gestion des Risques SI</p></div></div>
+            <div class="cert-card reveal reveal-d1"><div class="cert-icon"><i class="fa-solid fa-network-wired"></i></div><div class="cert-info"><h4>Cisco Cybersecurity</h4><p>Introduction to Cybersecurity</p></div></div>
+            <div class="cert-card reveal reveal-d2"><div class="cert-icon"><i class="fa-brands fa-microsoft"></i></div><div class="cert-info"><h4>Microsoft Learn</h4><p>Windows Server Administration</p></div></div>
+            <div class="cert-card reveal reveal-d3"><div class="cert-icon"><i class="fa-solid fa-lock"></i></div><div class="cert-info"><h4>PIX — CNIL</h4><p>Protection des données personnelles</p></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ CONTACT ══════════ -->
+<section id="contact">
+    <div class="contact-inner">
+        <div class="contact-glow"></div>
+        <div class="section-label reveal" style="justify-content:center;">006 — Contact</div>
+        <h2 class="section-title reveal">Prochain<br>déploiement ?</h2>
+        <p class="reveal">Disponible pour une alternance ou un stage. Tous les dossiers E5 sont accessibles en version HTML interactive, Word et PDF téléchargeables.</p>
+        <div class="contact-btns reveal">
+            <a href="mailto:younes@exemple.fr" class="btn-primary">Envoyer un mail</a>
+            <a href="#" class="btn-ghost">LinkedIn</a>
+            <a href="#" class="btn-ghost">Télécharger CV</a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <span>© 2026 Younes Bouizergane — SISR Engineer</span>
+    <div class="footer-dot"></div>
+    <span>Paris, France</span>
+</footer>
+
+<script>
+/* ── CURSOR ─────────────────────────────── */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => {
+    mx=e.clientX; my=e.clientY;
+    cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+});
+(function animRing(){
+    rx+=(mx-rx)*.15; ry+=(my-ry)*.15;
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,.mission-card,.word-card,.justify-card,.cert-card').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ring.style.width='56px';ring.style.height='56px';ring.style.borderColor='rgba(0,255,136,.6)';});
+    el.addEventListener('mouseleave',()=>{ring.style.width='34px';ring.style.height='34px';ring.style.borderColor='rgba(0,255,136,.35)';});
+});
+
+/* ── SCROLL ─────────────────────────────── */
+window.addEventListener('scroll',()=>{
+    document.getElementById('scroll-bar').style.width =
+        (window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+    document.getElementById('navbar').classList.toggle('solid', window.scrollY>60);
+});
+
+/* ── PARTICLES ──────────────────────────── */
+const canvas=document.getElementById('canvas-particles');
+const ctx=canvas.getContext('2d');
+function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+resize(); window.addEventListener('resize',resize);
+const pts=Array.from({length:55},()=>({
+    x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+    r:Math.random()*1.4+.3, vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+    a:Math.random()*.4+.1
+}));
+(function drawP(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p=>{
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,255,136,${p.a})`; ctx.fill();
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0||p.x>canvas.width)  p.vx*=-1;
+        if(p.y<0||p.y>canvas.height) p.vy*=-1;
+    });
+    requestAnimationFrame(drawP);
+})();
+
+/* ── TYPEWRITER ─────────────────────────── */
+const phrases=[
+    'Déploiement de serveurs & sécurisation des flux réseaux.',
+    'Virtualisation VMware & gestion des identités (IAM).',
+    'Conception d\'architectures résilientes et évolutives.',
+    'HSRP · DMZ · VPN SSL · VLANs · OSPF · ESXi.',
+];
+let pi=0,ci=0,del=false;
+const tw=document.getElementById('typewriter').querySelector('span');
+function type(){
+    const ph=phrases[pi];
+    if(!del){ tw.textContent=ph.substring(0,ci+1); ci++; if(ci===ph.length){del=true;setTimeout(type,2000);return;} }
+    else    { tw.textContent=ph.substring(0,ci-1);  ci--; if(ci===0){del=false;pi=(pi+1)%phrases.length;} }
+    setTimeout(type,del?28:55);
+}
+type();
+
+/* ── REVEAL ON SCROLL ───────────────────── */
+const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+        if(e.isIntersecting){
+            e.target.classList.add('active');
+            e.target.querySelectorAll('.skill-fill').forEach(b=>{ b.style.width=b.dataset.pct+'%'; });
+        }
+    });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ── SKILL BARS (also on section enter) ──── */
+const aboutObs=new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting)
+        document.querySelectorAll('.skill-fill').forEach(b=>{ b.style.width=b.dataset.pct+'%'; });
+},{threshold:.1});
+const aboutSec=document.getElementById('about');
+if(aboutSec) aboutObs.observe(aboutSec);
+
+/* ── COUNTERS ───────────────────────────── */
+document.querySelectorAll('[data-target]').forEach(el=>{
+    let started=false; const t=parseInt(el.dataset.target);
+    window.addEventListener('scroll',()=>{
+        if(!started && el.getBoundingClientRect().top<window.innerHeight){
+            started=true; let c=0;
+            const iv=setInterval(()=>{ c++; el.textContent=c; if(c>=t)clearInterval(iv); },200);
+        }
+    });
+});
+
+/* ── MOBILE MENU ────────────────────────── */
+function toggleMenu(){ document.getElementById('mobileMenu').classList.toggle('open'); }
+function closeMobile(){ document.getElementById('mobileMenu').classList.remove('open'); }
+</script>
+</body>
+</html>
